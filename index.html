@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Daphne</title>
+  <meta name="description" content="Daphne">
+  <style>
+    body { 
+      margin: 0; overflow: hidden; 
+    }
+    #viewer{
+        position: absolute;
+        z-index: 1;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+    }
+    #loading {
+        pointer-events: none;
+        position: absolute;
+        z-index: 4;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: #BADA55;
+        padding: 70px 0;
+        border: 3px solid green;
+        text-align: center;
+        color: red;
+        font-size:50px;
+        font-family: arial;
+    }
+    #left_hud {
+        pointer-events: none;
+        position: absolute;
+        z-index: 3;
+        left: 0;
+        width: 45%;
+        height: 100%;
+        margin-left: 2.5%;
+    }
+    #right_hud {
+        pointer-events: none;
+        position: absolute;
+        z-index: 3;
+        right: 0;
+        width: 45%;
+        height: 100%;
+        margin-right: 2.5%;
+    }
+    #guide_circle_left {
+        pointer-events: none;
+        position: absolute;
+        top: 50%; left: 50%;
+        transform: translate(-50%,-50%);
+        width: 2.5vw;
+        height: 2.5vw;
+        border-radius: 100%;
+    }
+    #guide_circle_right {
+        pointer-events: none;
+        position: absolute;
+        top: 50%; left: 50%;
+        transform: translate(-50%,-50%);
+        width: 2.5vw;
+        height: 2.5vw;
+        border-radius: 100%;
+    }
+
+    .info_text{
+        color: white;
+        font-size: 100%;
+        font-family: Arial;
+    }
+
+    .three-div{
+      background: #BADA55;
+      color: #E50000;
+      font-family: Arial, Helvetica, Sans-serif;
+      font-size: 2em;
+      padding: 2em;
+    }
+
+    .hud_text_area{
+        pointer-events: none;
+        position: absolute;
+        top: 15%; left: 0%;
+        width: 40%;
+        height: 20%;
+        z-index: 4;
+
+    }
+
+    .hud_image_area{
+        pointer-events: none;
+        position: absolute;
+        top: 10%; right: 0%;
+        width: 50%;
+        height: 25%;
+        z-index: 5;
+        opacity: 0.8;
+        background-color: none;
+
+    }
+</style>
+</head>
+<body> 
+
+  <div id="viewer">
+    <div id = "loading">LOADING...</div>
+    <div id="left_hud">
+      <div id="guide_circle_left"></div>
+      <div class="hud_text_area"><p class="info_text">ORBIT 1</p></div>
+      <div class="hud_image_area" id="left-graph"></div>
+
+  </div>
+  <div id="right_hud">
+      <div id="guide_circle_right"></div>
+      <div class="hud_text_area"><p class="info_text">ORBIT 1</p></div>
+      <div class="hud_image_area" id="right-graph"></div>
+  </div>
+
+  </div>
+
+  <script src="./js/jquery.min.js"></script>
+  <script src="./js/three.min.js"></script>
+  <script src="./js/StereoEffect.js"></script>
+  <script src="./js/OrbitControls.js"></script>
+  <script src="./js/DeviceOrientationControls.js"></script>
+  <script src="./js/MTLLoader.js"></script>
+  <script src="./js/OBJLoader.js"></script>
+  <script src="./js/loadingbar.js"></script>
+  <script src="./js/dynamicTexture.js"></script>
+
+  <script src="daphne.js"></script>
+<body>
+</html>
