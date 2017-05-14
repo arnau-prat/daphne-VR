@@ -16,7 +16,7 @@
     (DATABASE::Instrument (Name ?ins2) (Intent "Laser altimeters") (spectral-bands $?sr))
     =>
     (call ?*p* addElement (new java.lang.String 
-        (str-cat ">> Two lidars working at same frequency: " ?o " " ?ins1 " " ?ins2 " at "$?sr))))
+        (str-cat ">> Instruments "  ?ins1 " and " ?ins2 " cannot be together"))))
 
 (defrule CRITIQUE-PERFORMANCE::num-of-instruments
 	(CRITIQUE-PERFORMANCE-PARAM::total-num-of-instruments (value ?v&:(> ?v 14)))
@@ -28,17 +28,17 @@
     (MANIFEST::Mission  (Name ?miss) (datarate-duty-cycle# ?dc&:(< ?dc 1.0)))
     =>
     (call ?*p* addElement (new java.lang.String  
-        (str-cat ">> Cumulative spacecraft data rate cannot be downloaded to ground stations: " ?miss " dc = " ?dc))))
+        (str-cat ">> Cumulative spacecraft data rate in oribt " ?miss " is too big (" (format nil "%2.2f" ?dc) ")"))))
 
 (defrule CRITIQUE-PERFORMANCE::resource-limitations-power
     "Technology to provide more than 10kW is currently expensive"
     (MANIFEST::Mission (Name ?miss) (power-duty-cycle# ?dc&:(< ?dc 1.0)))
     =>
     (call ?*p* addElement (new java.lang.String  
-        (str-cat ">> Cumulative spacecraft power exceeds 10kW: " ?miss " dc = " ?dc))))
+        (str-cat ">> Cumulative spacecraft power in orbit " ?miss " is  too big (" (format nil "%2.2f" ?dc) ")"))))
 
-(defrule CRITIQUE-PERFORMANCE::fairness-check
-    (CRITIQUE-PERFORMANCE-PARAM::fairness (flag 1) (value ?v)(stake-holder1 ?sh1) (stake-holder2 ?sh2))
-    =>
-    (call ?*p* addElement (new java.lang.String  
-        (str-cat ">> Satisfaction value for stakeholder " ?sh1 " is larger than " ?sh2 " (difference: " ?v ")"))))
+;(defrule CRITIQUE-PERFORMANCE::fairness-check
+;    (CRITIQUE-PERFORMANCE-PARAM::fairness (flag 1) (value ?v)(stake-holder1 ?sh1) (stake-holder2 ?sh2))
+;    =>
+;    (call ?*p* addElement (new java.lang.String  
+;        (str-cat ">> Satisfaction value for stakeholder " ?sh1 " is larger than " ?sh2 " (" (format nil "%2.2f" ?v) ")"))))

@@ -4,9 +4,11 @@ var architecture = [], plotPoints = [];
 
 var points;
 
+var maxIndex = 0;
+
 var instrumentsGroup, filtersGroup;
 
-var criticizeGroup;
+var criticizeGroup, criticizeData;
 
 var processing;
 
@@ -159,6 +161,20 @@ function init() {
     mesh = drawPlotGrid();
     mesh.position.set(plot.x,plot.y,plot.z);
     scene.add(mesh);
+
+    // Create critic table
+
+    criticizeData = ["== Call criticize to show warnings"];
+    drawCriticTable(0);
+
+    material = new THREE.MeshLambertMaterial({color: 0xff666e});
+    mesh = new THREE.Mesh(new THREE.CubeGeometry(50,50,50), material);
+    mesh.position.set(200,400,-400);
+    mesh.userData.index = 0;
+    mesh.userData.type = "button";
+    mesh.userData.subtype = "indexCritic";
+    actuators.push(mesh);
+    scene.add(mesh);
 }
 
 function render() {
@@ -287,6 +303,11 @@ $(document).keypress(function() {
                 console.log("criticize");
                 var msg = {event: "criticize"};
                 ws_send(msg);
+            } else if(object.userData.subtype == "indexCritic") {
+                console.log("Button critic");
+                console.log(object.userData.index);
+                object.userData.index = (object.userData.index+1)%(maxIndex+1);
+                drawCriticTable(object.userData.index);
             }
         } else {
             // Do nothing
@@ -890,6 +911,99 @@ function labelAxis(width, data, direction) {
   return dobj;
 }
 
+function cubeGeometry2LineGeometry(input) {
+    var geometry = new THREE.Geometry();
+    var vertices = geometry.vertices;
+    for (var i = 0; i < input.faces.length; i += 2) {
+        var face1 = input.faces[i];
+        var face2 = input.faces[i + 1];
+        var c1 = input.vertices[face1.c].clone();
+        var a1 = input.vertices[face1.a].clone();
+        var a2 = input.vertices[face2.a].clone();
+        var b2 = input.vertices[face2.b].clone();
+        var c2 = input.vertices[face2.c].clone();
+        vertices.push(c1, a1, a2, b2, b2, c2);
+    }
+    geometry.computeLineDistances();
+    return geometry;
+}
+
+function drawCriticTable(index) {
+    var mesh;
+    var data = criticizeData;
+    scene.remove(criticizeGroup);
+    criticizeGroup = new THREE.Object3D();
+
+    maxIndex = Math.floor(data.length/5);
+    console.log(maxIndex);
+
+    var i_min = index*5;
+    var i_max = (data.length < (index+1)*5) ? data.length : (index+1)*5;
+
+    for(var i = i_min; i < i_max ; i++) {
+        var color = "blue";
+        if(data[i].includes("==")) {
+            color = "orange";
+        } else if(data[i].includes(">>")) {
+            color = "red";
+        } else if(data[i].includes("<<")) {
+            color = "green";
+        }
+        mesh = drawCriticRow(data[i],color);
+        mesh.position.set(-375,300-(i-i_min)*50,-400);
+        criticizeGroup.add(mesh);
+    }
+
+    scene.add(criticizeGroup);
+}
+
+function drawCriticRow(text, color) {
+
+    var geometry, material, mesh, fontshape;
+
+    var tableRow = new THREE.Object3D();
+
+    var area_size = {x:750, y:50, z:10};
+
+    // wLabel
+    var dynamicTexture = new THREEx.DynamicTexture(area_size.x*5,area_size.y*5);
+    dynamicTexture.context.font = "bolder 100px Verdana";
+    dynamicTexture.texture.anisotropy = renderer.getMaxAnisotropy()
+    dynamicTexture.clear(color).drawTextCooked({text: text, margin: 0.05, lineHeight: 0.6});
+    geometry = new THREE.PlaneGeometry(area_size.x,area_size.y);
+    material = new THREE.MeshBasicMaterial({map:dynamicTexture.texture});
+    mesh = new THREE.Mesh(geometry, material);
+    mesh.position.set(area_size.x/2,-area_size.y/2,area_size.z+0.1);
+    tableRow.add(mesh);
+
+    // wValueTextField
+    geometry = new THREE.BoxGeometry(area_size.x, area_size.y, area_size.z);
+    material = new THREE.MeshBasicMaterial();
+    mesh = new THREE.Mesh(geometry, material);
+    mesh.material.color.setHex("0x303030");
+    mesh.position.set(area_size.x/2,-area_size.y/2,area_size.z/2);
+    tableRow.add(mesh);
+
+    // wMarker
+    geometry = new THREE.BoxGeometry(20+0.1, area_size.y+0.1, area_size.z);
+    material = new THREE.MeshBasicMaterial();
+    mesh = new THREE.Mesh(geometry, material);
+    mesh.material.color.setHex("0x303030");
+    mesh.position.set(20/2,-area_size.y/2,area_size.z/2+5);
+    tableRow.add(mesh);
+
+    // wFrame
+    geometry = cubeGeometry2LineGeometry(
+        new THREE.BoxGeometry(area_size.x, area_size.y, 0.1));
+    material = new THREE.LineBasicMaterial();
+    mesh = new THREE.Line(geometry, material);
+    mesh.material.color.setHex("0x060606");
+    mesh.position.set(area_size.x/2,-area_size.y/2,area_size.z+0.1);
+    tableRow.add(mesh);
+
+    return tableRow;
+}
+
 // ----- Web sockets
 
 $(document).ready(function () {
@@ -944,17 +1058,8 @@ function open_ws(msg){
                 ws_send(msg);
                 processing.visible = true;
             } else if(msg.type == "criticize") {
-                var data = msg.data;
-                var mesh;
-                scene.remove(criticizeGroup);
-                criticizeGroup = new THREE.Object3D();
-                for(var i = 0; i < data.length; i++) {
-                    console.log(data[i]);
-                    mesh = createGridElement(data[i],10000,400,1000,40);
-                    mesh.position.set(0,100+i*50,-400);
-                    criticizeGroup.add(mesh);
-                }
-                scene.add(criticizeGroup);
+                criticizeData = msg.data;
+                drawCriticTable(0);
                 processing.visible = false;
             } else if(msg.type == "assistant") {
                 console.log("assistant message received");

@@ -45,7 +45,7 @@ import rbsa.eoss.DBManagement;
 
 public class RBSAEOSS {
 
-    private String path = "/home/ubuntu/daphne-VR/VASSAR/";
+    private String path = "/home/ubuntu/daphne-VR/server/VASSAR/";
 
     private ArchitectureEvaluator AE = null;
     private ArchitectureGenerator AG = null;

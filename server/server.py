@@ -40,14 +40,14 @@ class webSocket(tornado.websocket.WebSocketHandler):
 
     def on_message(self, message):
         print "msg recevied", message
-	msg = json.loads(message)
+        msg = json.loads(message)
         if msg["event"] == "register":
             print "Event register"
             self.webpage = True
             filename = "EOSS_data.csv"
             lines = [line.rstrip() for line in open(filename)]
             for line in lines:
-	        print "Init Point"
+                print "Init Point"
                 array = line.split(":")
                 science = str(array[1])
                 cost = str(array[2])

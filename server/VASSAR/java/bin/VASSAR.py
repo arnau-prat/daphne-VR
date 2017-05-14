@@ -25,11 +25,19 @@ class VASSAR:
         for o in orbits:
             input_arch.add(o)
         result = self.rbsaeoss.criticizeArch(input_arch)
-
         output_res = []
         for r in result:
             output_res.append(str(r))
+        output_res = self.convertOutput(output_res)
+        return output_res
 
+    def explainArch(self,orbits):
+       return ""
+
+    def improveArch(self,orbits):
+       return ""
+
+    def convertOutput(self, output_res):
         for r in range(0, len(output_res)):
             # Instruments
             output_res[r] = output_res[r].replace("ACE_ORCA","A")
@@ -52,9 +60,6 @@ class VASSAR:
             output_res[r] = output_res[r].replace("SSO-800-SSO-PM","5")
 
         return output_res
-
-    def explainArch(self,orbits):
-        return "Hello"
 
     def close(self):
         jpype.shutdownJVM()

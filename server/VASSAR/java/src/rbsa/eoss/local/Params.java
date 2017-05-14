@@ -97,6 +97,9 @@ public class Params {
     public static String[] instrument_list = {"ACE_ORCA","ACE_POL","ACE_LID","CLAR_ERB","ACE_CPR","DESD_SAR","DESD_LID","GACM_VIS","GACM_SWIR","HYSP_TIR","POSTEPS_IRS","CNES_KaRIN"};
     public static int ninstr;
     public static String[] orbit_list = {"LEO-600-polar-NA","SSO-600-SSO-AM","SSO-600-SSO-DD","SSO-800-SSO-DD","SSO-800-SSO-PM"};
+    public static String[] orbit_type = {"Inclined, non-sun-synchronous", "Sun-synchronous","Sun-synchronous","Sun-synchronous","Sun-synchronous"};
+    public static int[] orbit_altitude = {600,600,600,800,800};
+    public static String[] orbit_LST = {"NA","AM","DD","DD","PM"};
     public static int norb;
     public static HashMap instrument_indexes;
     public static HashMap orbit_indexes;

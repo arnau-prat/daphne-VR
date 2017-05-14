@@ -21,6 +21,7 @@ import jess.Value;
 import jess.ValueVector;
 import org.apache.commons.lang3.StringUtils;
 import rbsa.eoss.local.Params;
+import rbsa.eoss.HistoricalDatabase;
 import java.util.HashMap;
 import java.util.Vector;
 
@@ -843,10 +844,13 @@ public class GenericTask implements Callable {
     private Result criticizePerformance(Rete r, Architecture arch, QueryBuilder qb, MatlabFunctions m) {
 
         Result result = new Result();
+        Vector<String> list = new Vector<String>();
+
+        // Criticize using rules
         try {
             // First evaluate performance
             result = evaluatePerformance(r, arch, qb, m);
-            // Criticize performance
+            // Criticize performance rules
             r.batch(Params.critique_performance_initialize_facts_clp);
             r.batch(Params.critique_performance_clp);
             r.batch(Params.critique_performance_precalculation_clp);
@@ -860,7 +864,7 @@ public class GenericTask implements Callable {
             r.run();
             // First evaluate cost
             evaluateCost(r, arch, result, qb, m);
-            // Criticize cost
+            // Criticize cost rules
             r.batch(Params.critique_cost_initialize_facts_clp);
             r.batch(Params.critique_cost_clp);
             r.batch(Params.critique_cost_precalculation_clp);
@@ -870,26 +874,90 @@ public class GenericTask implements Callable {
             r.run();
             r.setFocus("CRITIQUE-COST");
             r.run();
-
             //Fetch the results for performance
             Vector<String> list1 = new Vector<String>();
             list1 = (Vector<String>)r.getGlobalContext().getVariable("*p*").externalAddressValue(null);
-
             //Fetch the results for cost
             Vector<String> list2 = new Vector<String>();
             list2 = (Vector<String>)r.getGlobalContext().getVariable("*q*").externalAddressValue(null);
-
             //Combine results and save to result
-            Vector<String> list = new Vector<String>();
             list.addAll(list1);
             list.addAll(list2);
-            String[] array = list.toArray(new String[list.size()]);
-            result.setCritic(array);
 
         } catch(Exception e) {
-            System.out.println(e.getMessage()+" "+e.getClass()+" "+e.getStackTrace());
             e.printStackTrace();
+            System.out.println(e.getMessage()+" "+e.getClass()+" "+e.getStackTrace());
         }
+
+        Map<String, String> instrumentTypeMap = new HashMap<String, String>();
+        instrumentTypeMap.put("ACE_ORCA", "Ocean colour instruments");
+        instrumentTypeMap.put("ACE_POL", "Atmospheric chemistry");
+        instrumentTypeMap.put("ACE_LID", "Lidars");
+        instrumentTypeMap.put("CLAR_ERB", "Earth radiation budget radiometers");
+        instrumentTypeMap.put("ACE_CPR", "Cloud profile and rain radars");
+        instrumentTypeMap.put("DESD_SAR", "Imaging microwave radars");
+        instrumentTypeMap.put("DESD_LID", "Lidars");
+        instrumentTypeMap.put("GACM_VIS", "Imaging multi-spectral radiometers (vis/IR)");
+        instrumentTypeMap.put("GACM_SWIR", "Imaging multi-spectral radiometers (vis/IR)");
+        instrumentTypeMap.put("HYSP_TIR", "Imaging multi-spectral radiometers (vis/IR)");
+        instrumentTypeMap.put("POSTEPS_IRS", "Atmospheric chemistry");
+        instrumentTypeMap.put("CNES_KaRIN", "Radar altimeter");
+
+        // Criticize using historical database
+        try {
+
+            List<String> list3 = new ArrayList<String>();
+
+            List<Integer> idMissions;
+            List<Integer> idInstruments;
+            // Connect to the database
+            HistoricalDatabase ceosDb = new HistoricalDatabase();
+            // For each orbit
+            for(int o = 0; o < Params.norb; o++) {
+                if(!arch.isEmptyOrbit(Params.orbit_list[o])) {
+                    // Get past missions operating in a similar orbit
+                    idMissions = ceosDb.getMissionsInOrbit(
+                        Params.orbit_type[o],Params.orbit_altitude[o],Params.orbit_LST[o]);
+                    System.out.println("Missions in orbits similar to "+Params.orbit_list[o]);
+                    System.out.println(idMissions); //!
+
+                    // Get types of instruments used in past missions
+                    List<String> pastTypes = new ArrayList<String>();
+
+                    // Get instruments operating in this missions
+                    for(int k = 0; k < idMissions.size(); k++) {
+                        idInstruments = ceosDb.getInstrumentsInMission(idMissions.get(k));
+                        System.out.println(idInstruments); //!
+                        for(int i = 0; i < idInstruments.size(); i++) {
+                            String instrumentType = ceosDb.getInstrumentType(idInstruments.get(i));
+                            System.out.println(instrumentType); //!
+                            pastTypes.add(instrumentType);
+                        }
+                    }
+
+                    // Get current instruments in orbit
+                    String[] instruments = arch.getPayloadInOrbit(Params.orbit_list[o]);
+                    for(int l = 0; l < instruments.length; l++) {
+                        // Find number of matches
+                        int matches = 0;
+                        for(int mm = 0; mm < pastTypes.size(); mm++) {
+                            if(instrumentTypeMap.get(instruments[l]).equals(pastTypes.get(mm))) {
+                                matches += 1;
+                            }
+                        }
+                        list3.add("== Instrument "+instruments[l]
+                            +" in orbit "+Params.orbit_list[o]+": "+matches+" matches");
+                    }
+                }
+            }
+            list.addAll(list3);
+
+        } catch(Exception e) {
+            e.printStackTrace();
+            System.out.println(e.getMessage()+" "+e.getClass()+" "+e.getStackTrace());
+        }
+
+        result.setCritic(list.toArray(new String[list.size()]));
         return result;
     }
 }
