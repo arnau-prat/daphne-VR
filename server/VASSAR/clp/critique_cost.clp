@@ -19,7 +19,7 @@
 	=>
         (if (<> ?bn ?sn) then
         (call ?*q* addElement (new java.lang.String
-	(str-cat ">> Satellites do not have similar costs: satellite " ?bn " costs more than " ?sn " (" (format nil "%2.2f" ?r) ")")))))
+	(str-cat ">> Satellites do not have similar costs: satellite " ?bn " more than " ?sn " (" (format nil "%2.2f" ?r) ")")))))
 	
 (defrule CRITIQUE-COST::launch-packaging-factors
 	(CRITIQUE-COST-PARAM::launch-packaging-factors (name ?n)(performance-mass-ratio ?r-pm) (diameter-ratio ?r-dia) (height-ratio ?r-h))

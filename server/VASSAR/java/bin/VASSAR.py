@@ -5,15 +5,19 @@ class VASSAR:
 
     libs = ''.join([":./VASSAR/java/"+f for f in os.listdir('./VASSAR/java/') if f.endswith('.jar')])
 
+    rbsaeoss = None
+
     def __init__(self):
         # Start JVM
-        jpype.startJVM(jpype.getDefaultJVMPath(),'-ea','-Djava.class.path=./VASSAR/java/bin/'+self.libs)
-        # Get RBSAEOSS class
+        if not jpype.isJVMStarted():
+            jpype.startJVM(jpype.getDefaultJVMPath(),'-ea','-Djava.class.path=./VASSAR/java/bin/'+self.libs)
+       	# Get RBSAEOSS class
         rbsaPkg = jpype.JPackage('rbsa').eoss.local
         RBSAEOSS = rbsaPkg.RBSAEOSS
         self.rbsaeoss = RBSAEOSS()
 
     def evaluateArch(self,orbits):
+        jpype.attachThreadToJVM()
         input_arch = jpype.java.util.ArrayList()
         for o in orbits:
             input_arch.add(o)
@@ -21,6 +25,7 @@ class VASSAR:
         return result
 
     def criticizeArch(self,orbits):
+        jpype.attachThreadToJVM()
         input_arch = jpype.java.util.ArrayList()
         for o in orbits:
             input_arch.add(o)

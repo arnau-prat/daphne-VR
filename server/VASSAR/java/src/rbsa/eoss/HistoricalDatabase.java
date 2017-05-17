@@ -75,6 +75,47 @@ public class HistoricalDatabase {
         return result;
     }
 
+    public List<Integer> getInstruments(
+        String type, String technology, String geometry, String waveband) {
+
+        List<Integer> result = new ArrayList<Integer>();
+        // Query to be performed
+        String query ="SELECT id FROM instruments i"+
+            " INNER JOIN type_of_instrument it ON i.id = it.instrument_id"+
+            " INNER JOIN instrument_types t ON it.instrument_type_id = t.id"+
+            " INNER JOIN geometry_of_instrument ig ON i.id = ig.instrument_id"+
+            " INNER JOIN geometry_types g ON ig.instrument_geometry_id = g.id"+
+            " INNER JOIN instrument_wavebands iw ON i.id = iw.instrument_id"+
+            " INNER JOIN instrument_wavebands iw ON i.id = iw.instrument_id "+
+            " INNER JOIN wavebands w ON iw.waveband_id = w.id"+
+            " WHERE t.name = '"+type+"'";
+
+        //    SELECT i.id FROM instruments i 
+        //    INNER JOIN type_of_instrument it ON i.id = it.instrument_id
+        //    INNER JOIN instrument_types t ON it.instrument_type_id = t.id
+        //    INNER JOIN geometry_of_instrument ig ON i.id = ig.instrument_id
+        //    INNER JOIN geometry_types g ON ig.instrument_geometry_id = g.id
+        //    INNER JOIN instrument_wavebands iw ON i.id = iw.instrument_id
+        //    INNER JOIN wavebands w ON iw.waveband_id = w.id
+        //    WHERE t.name = 'Space environment' AND
+        //    i.technology = 'Space environment monitor' AND
+        //    g.name = 'TBD' AND
+        //    w.name = ''
+
+        try {
+            Statement st = conn.createStatement();
+            ResultSet rs = st.executeQuery(query);
+            while(rs.next()) {
+                result.add(rs.getInt("id"));
+            }
+            rs.close();
+            st.close();
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+        return result;
+    }
+
     public String getInstrumentType(int instrumentID) {
         String result = "";
         try {

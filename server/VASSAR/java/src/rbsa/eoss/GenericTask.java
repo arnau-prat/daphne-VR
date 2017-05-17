@@ -889,6 +889,7 @@ public class GenericTask implements Callable {
             System.out.println(e.getMessage()+" "+e.getClass()+" "+e.getStackTrace());
         }
 
+        // To be putted on Params.java
         Map<String, String> instrumentTypeMap = new HashMap<String, String>();
         instrumentTypeMap.put("ACE_ORCA", "Ocean colour instruments");
         instrumentTypeMap.put("ACE_POL", "Atmospheric chemistry");
@@ -915,7 +916,7 @@ public class GenericTask implements Callable {
             // For each orbit
             for(int o = 0; o < Params.norb; o++) {
                 if(!arch.isEmptyOrbit(Params.orbit_list[o])) {
-                    // Get past missions operating in a similar orbit
+                    // Get past missions operating in similar orbits
                     idMissions = ceosDb.getMissionsInOrbit(
                         Params.orbit_type[o],Params.orbit_altitude[o],Params.orbit_LST[o]);
                     System.out.println("Missions in orbits similar to "+Params.orbit_list[o]);
@@ -950,6 +951,36 @@ public class GenericTask implements Callable {
                     }
                 }
             }
+
+            // Number of queries to the database assuming average number of instruments 
+            // in m1 and m2 of 4 = 5*(567*0.1)*(1+2*4) = 2552
+            //
+            // int maxScore = -1;
+            // int maxMission = -1;
+            //
+            // for(m1; m1 < Params.norb; m1++) {
+            //     for(m2; m2 < nmissdb; m2++) {
+            //         //Compute score = score(m1,m2);
+            //         int s = 0;
+            //         score += orbitsSimilarity(o1,o2);
+            //         if(score > threshold) {
+            //             int i1 = number of instruments in m1
+            //             int i2 = number of instruments in m2
+            //             for(ii1 = 0; ii1 < i1; ii1++) {
+            //                 for(ii2 = 0; ii2 < i2; ii2++) {
+            //                     score += instrumentsSimilarity(ii1,ii2)/(i1*i2);
+            //                 }
+            //              }
+            //              if(score > maxScore) { 
+            //                  maxScore = score;
+            //                  maxMission = m2;
+            //              }
+            //         }
+            //    }
+            //    System.out.println(
+            //        "The most similar mission to "+m1+" is "+maxMission+ " with a score of "+maxScore);
+            //}
+
             list.addAll(list3);
 
         } catch(Exception e) {

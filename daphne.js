@@ -1033,7 +1033,7 @@ function ws_send(msg){
 
 function open_ws(msg){
     if(typeof(ws) == 'undefined' || ws.readyState === undefined || ws.readyState > 1){
-        ws = new WebSocket("ws://13.58.68.155/websocket");
+        ws = new WebSocket("ws://52.14.7.76/websocket/visual");
         ws.onopen = function(){
             console.log("ws open");
             if( msg.length != 0 ){
@@ -1044,29 +1044,34 @@ function open_ws(msg){
         ws.onmessage = function (evt){
             var received_msg = evt.data;
             msg = JSON.parse(evt.data)
-            science = msg.science;
-            cost = msg.cost;
-            if(msg.type == "init"){
+            if(msg.type == "registerOk") {
+                first = false;
+                ws_send({"event":"registerPoint","index":0});
+            } else  if(msg.type == "registerPoint") {
                 architecture = msg.architecture;
-                addPlotPoint(science,cost,architecture);
-            } else if(msg.type == "done") {
+                addPlotPoint(msg.science,msg.cost,architecture);
+                ws_send({"event":"registerPoint","index":msg.index});
+            } else if(msg.type == "registerDone") {
                 repositionInstruments();
                 updatePoint();
-                first = false;
             } else if(msg.type == "requestCriticize") {
-                var msg = {"event": "responseCriticize", "architecture": architecture};
+                var msg = {"event": "criticize", "architecture": architecture};
                 ws_send(msg);
                 processing.visible = true;
             } else if(msg.type == "criticize") {
                 criticizeData = msg.data;
                 drawCriticTable(0);
                 processing.visible = false;
-            } else if(msg.type == "assistant") {
-                console.log("assistant message received");
-            } else {
-                addPlotPoint(science,cost,architecture);
+            } else if(msg.type == "requestEvaluate") {
+                var msg = {"event": "evaluate", "architecture": architecture};
+                ws_send(msg);
+                processing.visible = true;
+            } else if(msg.type == "evaluate") {
+                addPlotPoint(msg.science, msg.cost, architecture);
                 updatePoint();
                 processing.visible = false;
+            } else {
+                console.log("Message from the server not indentified");
             }
         }
 
