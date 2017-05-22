@@ -41,7 +41,7 @@ public class HistoricalDatabase {
         List<Integer> result = new ArrayList<Integer>();
         // Query to be performed
         String query = "SELECT id FROM missions WHERE orbit_type = '"
-            +type+"' AND orbit_altitude = '"+String.valueOf(altitude)+" km'";
+            +type+"' AND orbit_altitude = "+String.valueOf(altitude);
         try {
             Statement st = conn.createStatement();
             ResultSet rs = st.executeQuery(query);

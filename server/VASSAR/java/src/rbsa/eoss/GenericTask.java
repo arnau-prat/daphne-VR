@@ -906,82 +906,54 @@ public class GenericTask implements Callable {
 
         // Criticize using historical database
         try {
+//
+//            List<String> list3 = new ArrayList<String>();
+//
+//            List<Integer> idMissions;
+//            List<Integer> idInstruments;
+//            // Connect to the database
+//            HistoricalDatabase ceosDb = new HistoricalDatabase();
+//            // For each orbit
+//            for(int o = 0; o < Params.norb; o++) {
+//                if(!arch.isEmptyOrbit(Params.orbit_list[o])) {
+//                    // Get past missions operating in similar orbits
+//                    idMissions = ceosDb.getMissionsInOrbit(
+//                        Params.orbit_type[o],Params.orbit_altitude[o],Params.orbit_LST[o]);
+//                   System.out.println("Missions in orbits similar to "+Params.orbit_list[o]);
+//                    System.out.println(idMissions); //!
+//
+//                    // Get types of instruments used in past missions
+//                    List<String> pastTypes = new ArrayList<String>();
+//
+//                    // Get instruments operating in this missions
+//                   for(int k = 0; k < idMissions.size(); k++) {
+//                        idInstruments = ceosDb.getInstrumentsInMission(idMissions.get(k));
+//                        System.out.println(idInstruments); //!
+//                        for(int i = 0; i < idInstruments.size(); i++) {
+//                            String instrumentType = ceosDb.getInstrumentType(idInstruments.get(i));
+//                            System.out.println(instrumentType); //!
+//                            pastTypes.add(instrumentType);
+//                        }
+//                    }
+//
+//                    // Get current instruments in orbit
+//                    String[] instruments = arch.getPayloadInOrbit(Params.orbit_list[o]);
+//                    for(int l = 0; l < instruments.length; l++) {
+//                        // Find number of matches
+//                        int matches = 0;
+//                        for(int mm = 0; mm < pastTypes.size(); mm++) {
+//                            if(instrumentTypeMap.get(instruments[l]).equals(pastTypes.get(mm))) {
+//                                matches += 1;
+//                            }
+//                        }
+//                       list3.add("== Instrument "+instruments[l]
+//                            +" in orbit "+Params.orbit_list[o]+": "+matches+" matches");
+//                    }
+//                }
+//            }
 
-            List<String> list3 = new ArrayList<String>();
-
-            List<Integer> idMissions;
-            List<Integer> idInstruments;
-            // Connect to the database
-            HistoricalDatabase ceosDb = new HistoricalDatabase();
-            // For each orbit
-            for(int o = 0; o < Params.norb; o++) {
-                if(!arch.isEmptyOrbit(Params.orbit_list[o])) {
-                    // Get past missions operating in similar orbits
-                    idMissions = ceosDb.getMissionsInOrbit(
-                        Params.orbit_type[o],Params.orbit_altitude[o],Params.orbit_LST[o]);
-                    System.out.println("Missions in orbits similar to "+Params.orbit_list[o]);
-                    System.out.println(idMissions); //!
-
-                    // Get types of instruments used in past missions
-                    List<String> pastTypes = new ArrayList<String>();
-
-                    // Get instruments operating in this missions
-                    for(int k = 0; k < idMissions.size(); k++) {
-                        idInstruments = ceosDb.getInstrumentsInMission(idMissions.get(k));
-                        System.out.println(idInstruments); //!
-                        for(int i = 0; i < idInstruments.size(); i++) {
-                            String instrumentType = ceosDb.getInstrumentType(idInstruments.get(i));
-                            System.out.println(instrumentType); //!
-                            pastTypes.add(instrumentType);
-                        }
-                    }
-
-                    // Get current instruments in orbit
-                    String[] instruments = arch.getPayloadInOrbit(Params.orbit_list[o]);
-                    for(int l = 0; l < instruments.length; l++) {
-                        // Find number of matches
-                        int matches = 0;
-                        for(int mm = 0; mm < pastTypes.size(); mm++) {
-                            if(instrumentTypeMap.get(instruments[l]).equals(pastTypes.get(mm))) {
-                                matches += 1;
-                            }
-                        }
-                        list3.add("== Instrument "+instruments[l]
-                            +" in orbit "+Params.orbit_list[o]+": "+matches+" matches");
-                    }
-                }
-            }
-
-            // Number of queries to the database assuming average number of instruments 
-            // in m1 and m2 of 4 = 5*(567*0.1)*(1+2*4) = 2552
-            //
-            // int maxScore = -1;
-            // int maxMission = -1;
-            //
-            // for(m1; m1 < Params.norb; m1++) {
-            //     for(m2; m2 < nmissdb; m2++) {
-            //         //Compute score = score(m1,m2);
-            //         int s = 0;
-            //         score += orbitsSimilarity(o1,o2);
-            //         if(score > threshold) {
-            //             int i1 = number of instruments in m1
-            //             int i2 = number of instruments in m2
-            //             for(ii1 = 0; ii1 < i1; ii1++) {
-            //                 for(ii2 = 0; ii2 < i2; ii2++) {
-            //                     score += instrumentsSimilarity(ii1,ii2)/(i1*i2);
-            //                 }
-            //              }
-            //              if(score > maxScore) { 
-            //                  maxScore = score;
-            //                  maxMission = m2;
-            //              }
-            //         }
-            //    }
-            //    System.out.println(
-            //        "The most similar mission to "+m1+" is "+maxMission+ " with a score of "+maxScore);
-            //}
-
-            list.addAll(list3);
+            // This task is now done by the module CRITIQUE written in Python
+            // list.addAll(list3);
 
         } catch(Exception e) {
             e.printStackTrace();

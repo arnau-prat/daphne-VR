@@ -32,8 +32,8 @@ var dash2 = {x: -300, y: 0, z: 0};
 
 var plot = {x: 0, y: 150, z: 500, w: 700, h: 400};
 
-var xLabel = ["0", "0.05", "0.10", "0.15", "0.20", "0.25", "0.30"],
-    yLabel = ["2000", "4000", "6000", "8000"];
+var xLabel = ["0", "0.04", "0.08", "0.12", "0.16", "0.20", "0.24"],
+    yLabel = ["2500", "5000", "7500", "10000"];
 
 function init() {
 
@@ -642,8 +642,8 @@ function drawPlotPoint(filter) {
         }
 
         mesh = new THREE.Mesh(new THREE.SphereGeometry(5, 4, 4), material);
-        mesh.position.x = -(plotPoints[i].x*700)/0.35+350;
-        mesh.position.y = (plotPoints[i].y*400)/8000-200;
+        mesh.position.x = -(plotPoints[i].x*700)/0.28+350;
+        mesh.position.y = (plotPoints[i].y*400)/10000-200;
         mesh.position.z = 10;
         points.add(mesh);
     }
@@ -1044,14 +1044,16 @@ function open_ws(msg){
         ws.onmessage = function (evt){
             var received_msg = evt.data;
             msg = JSON.parse(evt.data)
-            if(msg.type == "registerOk") {
+            if(msg.type == "register") {
                 first = false;
-                ws_send({"event":"registerPoint","index":0});
-            } else  if(msg.type == "registerPoint") {
+                processing.visible = true;
+                ws_send({"event":"initPoint","index":0});
+            } else  if(msg.type == "initPoint") {
                 architecture = msg.architecture;
                 addPlotPoint(msg.science,msg.cost,architecture);
-                ws_send({"event":"registerPoint","index":msg.index});
-            } else if(msg.type == "registerDone") {
+                ws_send({"event":"initPoint","index":msg.index});
+            } else if(msg.type == "initDone") {
+                processing.visible = false;
                 repositionInstruments();
                 updatePoint();
             } else if(msg.type == "requestCriticize") {
@@ -1067,6 +1069,8 @@ function open_ws(msg){
                 ws_send(msg);
                 processing.visible = true;
             } else if(msg.type == "evaluate") {
+                criticizeData = ["== Call criticize to show warnings"];
+                drawCriticTable(0);
                 addPlotPoint(msg.science, msg.cost, architecture);
                 updatePoint();
                 processing.visible = false;

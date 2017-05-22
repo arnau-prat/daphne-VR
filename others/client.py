@@ -1,17 +1,17 @@
-#!/usr/bin/env python
+#!/usr/bin/python
 
-import socket
+import time
+import websocket
+
+def main():
+    address = "ws://52.14.7.76/websocket/audio"
+    ws = websocket.create_connection(address)
+    msg = '{"event":"criticize"}'
+    print 'Sending message: '+msg
+    ws.send(msg)
+    ws.close()
+
+if __name__ == "__main__":
+    main()
 
 
-TCP_IP = '127.0.0.10' #'13.58.68.155'
-TCP_PORT = 5005
-BUFFER_SIZE = 1024
-MESSAGE = "Hello, World!"
-
-s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-s.connect((TCP_IP, TCP_PORT))
-s.send(MESSAGE)
-data = s.recv(BUFFER_SIZE)
-s.close()
-
-print "received data:", data

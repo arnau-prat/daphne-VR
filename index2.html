@@ -1,0 +1,480 @@
+<!doctype html>
+<html lang="en">
+<head>
+<title>Daphne 2D interface</title>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+<style>
+
+html, body {
+    padding: 0; 
+    margin: 0; 
+    font: 10px sans-serif;
+}
+
+body > div {
+    position: absolute; 
+}
+
+.div1 { background: #DDD; top:0; left:0; bottom:300px; width:50%; }
+.div2 { background: #AAA; top:0; right:0; bottom:300px; width:50%; overflow-y: scroll;}
+.div3 { background: #777; bottom: 0; left:0; height: 300px; width:50%; }
+.div4 { background: #444; bottom: 0; right:0; height: 300px; width:50%;  }
+
+.trash {
+    float: left;
+    width: 50px;
+    height: 50px;
+    background: red;
+}
+
+.button {
+    float: left;
+    height: 50px;
+    margin:50px;
+    background: green;
+}
+
+.instrument {
+    float:left;
+    width: 40px;
+    height: 40px;
+    margin: 10px;
+    font-size: 20px;
+    border: 2px solid #333;
+    background: #fff;
+    line-height: 40px;
+    text-align: center;
+}
+
+.orbit {
+    float:left;
+    width: 100%;
+    height: 60px;
+}
+
+.orbit div {
+    float:left;
+    width: 40px;
+    height: 40px;
+    margin: 10px;
+    font-size: 20px;
+    border: 2px solid #333;
+    background: #fff;
+    line-height: 40px;
+    text-align: center;
+}
+
+.i-container {
+    position: relative;
+    outline: 1px solid green;
+    width: 60%;
+    margin:auto;
+    font: 16pt sans-serif;
+}
+
+.orbit {
+    position: relative;
+}
+
+
+.alert-box {
+    display: block;
+    position: relative;
+    color:#555;
+    border-radius:10px;
+    font-family:Tahoma,Geneva,Arial,sans-serif;font-size:11px;
+    padding:10px;
+    margin:10px;
+}
+
+.alert-box p {
+    display: inline;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.alert-box:hover span{
+    display:block;
+    float:left;
+}
+
+.alert-box span{
+    background:#F8F8F8;
+    border: 5px solid #DFDFDF;
+    color: #717171;
+    font-size: 13px;
+    height: 30px;
+    letter-spacing: 1px;
+    line-height: 30px;
+    position: relative;
+    text-align: center;
+    text-transform: uppercase;
+    top: 0px;
+    left:30px;
+    display:none;
+    padding:0 20px;
+    
+}
+
+.notice {
+    background: #e3f7fc;
+    border: 1px solid #8ed9f6;
+}
+
+.warning {
+    background: #fff8c4;
+    border:1px solid #f2c779;
+}
+
+.error {
+    background: #ffecec;
+    border: 1px solid #f5aca6;
+}
+
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+.dot {
+  stroke: #000;
+}
+
+</style>
+
+</head>
+<body>
+
+<div class="div1"></div>
+
+<div class="div2"></div>
+
+<div class="div3">
+    <div class="orbit" id="orbit1" style="background:red;"><div></div></div>
+    <div class="orbit" id="orbit2" style="background:blue;"><div></div></div>
+    <div class="orbit" id="orbit3" style="background:red;"><div></div></div>
+    <div class="orbit" id="orbit4" style="background:blue;"><div></div></div>
+    <div class="orbit" id="orbit5" style="background:red;"><div></div></div>
+</div>
+
+<div class="div4">
+    <div class="i-container">
+            <div class="instrument" data-id="A">A</div>
+            <div class="instrument" data-id="B">B</div>
+            <div class="instrument" data-id="C">C</div>
+            <div class="instrument" data-id="D">D</div>
+            <div class="instrument" data-id="E">E</div>
+            <div class="instrument" data-id="F">F</div>
+            <div class="instrument" data-id="G">G</div>
+            <div class="instrument" data-id="H">H</div>
+            <div class="instrument" data-id="I">I</div>
+            <div class="instrument" data-id="J">J</div>
+            <div class="instrument" data-id="K">K</div>
+            <div class="instrument" data-id="L">L</div>
+    </div>
+    <div class="trash"></div>
+    <a class="ui-button ui-widget ui-corner-all" id="evaluate" href="#">Evaluate</a>
+    <a class="ui-button ui-widget ui-corner-all" id="criticize" href="#">Criticize</a>
+</div>
+
+<script type="text/javascript" src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
+<script type="text/javascript" src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+<script src="//d3js.org/d3.v3.min.js"></script>
+
+<script>
+
+// Div 1 Javascript code 
+
+var plotPoints = [];
+
+var margin = {top: 40, right: 40, bottom: 40, left: 60},
+    w = parseInt(d3.select(".div1").style("width")), h = parseInt(d3.select(".div1").style("height")),
+    width = w - margin.left - margin.right,
+    height = h - margin.top - margin.bottom;
+
+var x = d3.scale.linear()
+    .range([0, width]);
+
+var y = d3.scale.linear()
+    .range([height, 0]);
+
+var color = d3.scale.category10();
+
+var xAxis = d3.svg.axis()
+    .scale(x)
+    .orient("bottom");
+
+var yAxis = d3.svg.axis()
+    .scale(y)
+    .orient("left");
+
+var svg = d3.select(".div1").append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+  .append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+  x.domain([0,0.25]);
+  y.domain([0,10000]);
+
+  svg.append("g")
+      .attr("class", "x axis")
+      .attr("transform", "translate(0," + height + ")")
+      .call(xAxis)
+    .append("text")
+      .attr("class", "label")
+      .attr("x", width)
+      .attr("y", -6)
+      .style("text-anchor", "end")
+      .text("Science");
+
+  svg.append("g")
+      .attr("class", "y axis")
+      .call(yAxis)
+    .append("text")
+      .attr("class", "label")
+      .attr("transform", "rotate(-90)")
+      .attr("y", 6)
+      .attr("dy", ".71em")
+      .style("text-anchor", "end")
+      .text("Cost")
+
+    svg.selectAll(".dot")
+        .data(plotPoints)
+        .enter().append("circle")
+        .attr("class","dot")
+        .attr("r", 4)
+        .attr("cx", function(d) { return x(d.science)})
+        .attr("cy", function(d) { return y(d.cost)})
+        .style("fill", "red");
+
+function resize() {
+
+    var w = parseInt(d3.select(".div1").style("width")), h = parseInt(d3.select(".div1").style("height")),
+    width = w - margin.left - margin.right,
+    height = h - margin.top - margin.bottom;
+
+    // Update the range of the scale with new width/height
+    x.range([0, width]);
+    y.range([height, 0]);
+
+    $("svg")
+        .width(width + margin.left + margin.right)
+        .height(height + margin.top + margin.bottom);
+
+    // Update the axis and text with the new scale
+    svg.select('.x.axis')
+        .attr("transform", "translate(0," + height + ")")
+        .call(xAxis);
+
+    svg.select('.x.axis').select('.label')
+        .attr("x",width);
+
+    svg.select('.y.axis')
+        .call(yAxis);
+
+      // Update the tick marks
+      xAxis.ticks(w / 75);
+      yAxis.ticks(h / 75);
+
+    svg.selectAll('.dot')
+        .attr("cx", function(d) { return x(d.science)})
+        .attr("cy", function(d) { return y(d.cost)});
+}
+
+d3.select(window).on('resize', resize);
+
+resize();
+
+function addPoint(point) {
+
+    svg.selectAll('.dot')
+        .attr("r", 4)
+        .style("fill", "#ffff00"); // Yellow
+
+    plotPoints.push(point);
+
+    svg.selectAll(".dot")
+        .data(plotPoints)
+        .enter().append("circle")
+        .attr("class","dot")
+        .attr("r", 4)
+        .attr("cx", function(d) { return x(d.science)})
+        .attr("cy", function(d) { return y(d.cost)})
+        .style("fill", "ff0000"); // Read
+}
+
+// Div 2 Javascript code
+
+function displayMessages(messages) {
+    var data = "";
+    for(var i = 0; i < messages.length; i++) {
+        var message = messages[i];
+        if(message.indexOf("==") != -1 ) {
+            data += "<div class='alert-box warning'><p>Database: </p>"+message.replace("==","")+"</div>";
+        } else if(message.indexOf(">>") != -1) {
+            data += "<div class='alert-box error'><p>Rule: </p>"+message.replace(">>","")+"</div>";
+        } else if(message.indexOf("<<") != -1) {
+            data += "<div class='alert-box notice'><p>Notice: </p>"+message.replace("<<","")+"</div>";
+        }
+    }
+    $(".div2").html(data);
+}
+
+displayMessages(["<< Call criticize to show warnings and recomendations"]);
+
+// Div 3 Javascript code
+
+$('.instrument').draggable({
+    connectWith: '.orbit',
+    helper: 'clone',
+    cursor: 'pointer'
+});
+
+$('.orbit').sortable({
+    connectWith: '.orbit',
+    cursor: 'pointer'
+}).droppable({
+    accept: '.instrument',
+    drop: function(event, ui) {
+        var $li = $('<div>').html(ui.draggable.html());
+        $li.appendTo(this);
+    }
+});
+
+$('.orbit div').remove(); // Used to solve bug with Jquery UI
+
+$('.trash').droppable({
+    accept: '.orbit div',
+    drop: function (event, ui) {
+        ui.draggable.remove();
+    }
+});
+
+function getArchitecture() {
+    var architecture = []
+    for(var o = 0; o < 5; o++) {
+        architecture.push($("#orbit"+(o+1)).text());
+    }
+    return architecture;
+}
+
+function setArchitecture(architecture) {
+    for(var o = 0; o < architecture.length; o++) {
+        var text = "";
+        for (var i = 0; i < architecture[o].length; i++){
+            text += "<div>"+architecture[o].charAt(i)+"</div>";
+        }
+        $("#orbit"+(o+1).toString()).html(text);
+    }
+}
+
+// Div 4 Javascript code
+
+$("#evaluate").click(function(event) {
+    displayMessages(["<< Evaluating architecture..."]);
+    ws_send({"event": "evaluate", "architecture": getArchitecture()});
+});
+
+$("#criticize").click(function(event) {
+    displayMessages(["<< Criticizing architecture..."]);
+    ws_send({"event": "criticize", "architecture": getArchitecture()});
+});
+
+// Webscokets and backend Javascript code
+
+var register = false;
+
+$(document).ready(function () {
+    if("WebSocket" in window){
+        websocket = true;
+    }else{
+        // no web socket support
+        websocket = false;
+    }
+    if(register == false) {
+        ws_send({"event": "register"});
+    }
+});
+
+
+function ws_send(msg){
+    if( websocket == true ){
+        if(typeof(ws) == 'undefined' || ws.readyState === undefined || ws.readyState > 1){
+            open_ws(msg);
+        }else{
+            ws.send( JSON.stringify(msg) );
+            console.log("ws_send sent");
+        }
+    }
+}
+
+function open_ws(msg){
+    if(typeof(ws) == 'undefined' || ws.readyState === undefined || ws.readyState > 1){
+        ws = new WebSocket("ws://52.14.7.76/websocket/visual");
+        ws.onopen = function(){
+            console.log("ws open");
+            if( msg.length != 0 ){
+                ws_send(msg);
+            }
+        }
+
+        ws.onmessage = function (evt){
+            var received_msg = evt.data;
+            msg = JSON.parse(evt.data)
+
+            if(msg.type == "register") {
+                register = true;
+                ws_send({"event":"initPoint","index":0});
+
+            } else if(msg.type == "initPoint") {
+                setArchitecture(msg.architecture);
+                addPoint({
+                    "science":msg.science,"cost":msg.cost,"architecture":msg.architecture});
+                ws_send({"event":"initPoint","index":msg.index});
+
+            } else if(msg.type == "initDone") {
+                // Not used in this interface
+
+            } else if(msg.type == "requestCriticize") {
+                displayMessages(["<< Criticizing architecture..."]);
+                var msg = {"event": "criticize", "architecture": getArchitecture()};
+                ws_send(msg);
+
+            } else if(msg.type == "criticize") {
+                criticizeData = msg.data;
+                displayMessages(criticizeData);
+
+            } else if(msg.type == "requestEvaluate") {
+                displayMessages(["<< Evaluating architecture..."]);
+                var msg = {"event": "evaluate", "architecture": getArchitecture()};
+                ws_send(msg);
+
+            } else if(msg.type == "evaluate") {
+                addPoint({
+                    "science":msg.science,"cost":msg.cost,"architecture":getArchitecture()});
+                displayMessages(["<< Call criticize to show warnings and recomendations"]);
+            } else {
+                displayMessages(["<< Message from the server not indentified"]);
+            }
+        }
+
+        ws.onclose = function(){
+            console.log("Connection is closed... reopen");
+            if(register == false) {
+                var msg = {"event": "register"};
+            } else {
+                var msg = {"event": ""};
+            }
+            setTimeout( function(){ws_send(msg);}, 1000);
+        }
+    }
+}
+
+</script>
+
+</body>
+</html>
