@@ -8,14 +8,16 @@ def ws_message(message):
 
     if msg["event"] == "evaluate":
         print "Event evaluate"
+        visualID = msg["id"]
         # Relay message to the visual interface
-        Group("visual").send({"text":json.dumps({
+        Group("visual-{}".format(visualID)).send({"text":json.dumps({
             "type": "requestEvaluate"})})
 
     elif msg["event"] == "criticize":
         print "Event criticize"
+        visualID = msg["id"]
         # Relay message to the visual interface
-        Group("visual").send({"text":json.dumps({
+        Group("visual-{}".format(visualID)).send({"text":json.dumps({
             "type": "requestCriticize"})})
 
     elif msg["event"] == "other":

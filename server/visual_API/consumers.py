@@ -1,7 +1,6 @@
 import json
-import time
 from channels import Group
-from channels.auth import channel_session_user, channel_session_user_from_http
+from channels.sessions import channel_session
 from VASSAR import VASSAR
 from CRITIC import CRITIC
 
@@ -12,14 +11,21 @@ critic = CRITIC.CRITIC()
 # Load EOSS_data file
 lines = [line.rstrip() for line in open("EOSS_data.csv")]
 
+k = -1
+
+def generateID():
+    global k
+    k = k + 1
+    return str(k)
+
+@channel_session
 def ws_message(message):
-    text = message.content["text"]
-    msg = json.loads(text)
+    msg = json.loads(message.content["text"])
 
     if msg["event"] == "register":
         print "Event register"
         message.reply_channel.send({"text": json.dumps({
-            "type": "register"})})
+            "type": "register", "id": message.channel_session["id"]})})
 
     elif msg["event"] == "initPoint":
         print "Event initPoint"
@@ -52,7 +58,7 @@ def ws_message(message):
         architecture = msg["architecture"]
         # Criticize architecture (based on rules)
         result1 = vassar.criticizeArch(architecture)
-        # Criticize architecture (based on database
+        # Criticize architecture (based on database)
         result2 = critic.criticizeArch(architecture)
         # Send response
         result = result1+result2
@@ -63,12 +69,18 @@ def ws_message(message):
     else:
         print msg
 
+@channel_session
 def ws_connect(message):
-    # Accept the connection request
+    # Accept connection
     message.reply_channel.send({"accept": True})
-    # Add to the group
-    Group("visual").add(message.reply_channel)
+    # Assign unique session ID
+    message.channel_session["id"] = generateID()
+    # Add them to the right group
+    Group("visual-{}".format( \
+        message.channel_session["id"])).add(message.reply_channel)
 
+@channel_session
 def ws_disconnect(message):
     # Remove from the group on clean disconnect
-    Group("visual").discard(message.reply_channel)
+    Group("visual-{}".format( \
+        message.channel_session["id"])).discard(message.reply_channel)

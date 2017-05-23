@@ -20,7 +20,7 @@ var separateFilter = '', togetherFilter = '', anyOrbitFilter = '', orbitsFilter 
 
 var currentOrbit = 1;
 
-var websocket = false, first = true;
+var websocket = false, register = false;
 
 var closet = {x: 0, y: -50, z: 50};
 
@@ -1013,7 +1013,7 @@ $(document).ready(function () {
         // no web socket support
         websocket = false;
     }
-    if(first == true) {
+    if(register == false) {
         var msg = {event: 'register'};
         ws_send(msg);
     }
@@ -1045,7 +1045,8 @@ function open_ws(msg){
             var received_msg = evt.data;
             msg = JSON.parse(evt.data)
             if(msg.type == "register") {
-                first = false;
+                register = true;
+                alert("Your session ID is: "+msg.id);
                 processing.visible = true;
                 ws_send({"event":"initPoint","index":0});
             } else  if(msg.type == "initPoint") {
@@ -1081,7 +1082,7 @@ function open_ws(msg){
 
         ws.onclose = function(){
             console.log("Connection is closed... reopen");
-            if(first == true) {
+            if(register == false) {
                 var msg = { event: 'register'};
             } else {
                 var msg = {event: ''};
