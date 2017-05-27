@@ -32,7 +32,7 @@ class VASSAR:
         result = self.rbsaeoss.criticizeArch(input_arch)
         output_res = []
         for r in result:
-            output_res.append(str(r))
+            output_res.append(["rules",str(r)])
         output_res = self.convertOutput(output_res)
         return output_res
 
@@ -45,24 +45,24 @@ class VASSAR:
     def convertOutput(self, output_res):
         for r in range(0, len(output_res)):
             # Instruments
-            output_res[r] = output_res[r].replace("ACE_ORCA","A")
-            output_res[r] = output_res[r].replace("ACE_POL","B")
-            output_res[r] = output_res[r].replace("ACE_LID","C")
-            output_res[r] = output_res[r].replace("CLAR_ERB","D")
-            output_res[r] = output_res[r].replace("ACE_CPR","E")
-            output_res[r] = output_res[r].replace("DESD_SAR","F")
-            output_res[r] = output_res[r].replace("DESD_LID","G")
-            output_res[r] = output_res[r].replace("GACM_VIS","H")
-            output_res[r] = output_res[r].replace("GACM_SWIR","I")
-            output_res[r] = output_res[r].replace("HYSP_TIR","J")
-            output_res[r] = output_res[r].replace("POSTEPS_IRS","K")
-            output_res[r] = output_res[r].replace("CNES_KaRIN","L")
+            output_res[r][1] = output_res[r][1].replace("ACE_ORCA","A")
+            output_res[r][1] = output_res[r][1].replace("ACE_POL","B")
+            output_res[r][1] = output_res[r][1].replace("ACE_LID","C")
+            output_res[r][1] = output_res[r][1].replace("CLAR_ERB","D")
+            output_res[r][1] = output_res[r][1].replace("ACE_CPR","E")
+            output_res[r][1] = output_res[r][1].replace("DESD_SAR","F")
+            output_res[r][1] = output_res[r][1].replace("DESD_LID","G")
+            output_res[r][1] = output_res[r][1].replace("GACM_VIS","H")
+            output_res[r][1] = output_res[r][1].replace("GACM_SWIR","I")
+            output_res[r][1] = output_res[r][1].replace("HYSP_TIR","J")
+            output_res[r][1] = output_res[r][1].replace("POSTEPS_IRS","K")
+            output_res[r][1] = output_res[r][1].replace("CNES_KaRIN","L")
             # Orbits
-            output_res[r] = output_res[r].replace("LEO-600-polar-NA","1")
-            output_res[r] = output_res[r].replace("SSO-600-SSO-AM","2")
-            output_res[r] = output_res[r].replace("SSO-600-SSO-DD","3")
-            output_res[r] = output_res[r].replace("SSO-800-SSO-DD","4")
-            output_res[r] = output_res[r].replace("SSO-800-SSO-PM","5")
+            output_res[r][1] = output_res[r][1].replace("LEO-600-polar-NA","1")
+            output_res[r][1] = output_res[r][1].replace("SSO-600-SSO-AM","2")
+            output_res[r][1] = output_res[r][1].replace("SSO-600-SSO-DD","3")
+            output_res[r][1] = output_res[r][1].replace("SSO-800-SSO-DD","4")
+            output_res[r][1] = output_res[r][1].replace("SSO-800-SSO-PM","5")
 
         return output_res
 

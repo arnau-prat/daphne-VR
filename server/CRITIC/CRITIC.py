@@ -1,4 +1,4 @@
-from sqlalchemy import func
+import numpy as np
 from sqlalchemy.orm import sessionmaker
 
 import models
@@ -54,36 +54,73 @@ class CRITIC:
         # Score orbit type
         if orbit1["type"] == mission2.orbit_type:
             score += 1
-        # Score altitude type
+        # Score orbit altitude
         if orbit1["altitude"]-50 < mission2.orbit_altitude < orbit1["altitude"]+50:
+            score += 1
+        # Score orbit LST
+        if orbit1["LST"] == mission2.orbit_LST:
             score += 1
         # Return orbit score
         return score
 
-    def instrumentsSimilarity(self, instruments1, mission2):
+    def instrumentsScore(self, instrument1, instrument2):
         score = 0.0
-        for instrument1 in instruments1:
-            for instrument2 in mission2.instruments:
-                # Score instruments type
-                for type2 in instrument2.types:
-                    if instrument1["type"] == type2.name:
-                        score += 1/len(instrument2.types)
-                # Score instruments technology
-                if instrument1["technology"] == instrument2.technology:
-                    score += 1
-                # Score instruments geometry
-                for geometry2 in instrument2.geometries:
-                    if instrument1["geometry"] == geometry2.name:
-                        score += 1/len(instrument2.geometries)
-                # Score instruments wavebands
-                for waveband2 in instrument2.wavebands:
-                    for waveband1 in instrument1["wavebands"]:
-                        if waveband1 == waveband2.name:
-                            score += 1/(len(instrument2.wavebands)*len(instrument1["wavebands"]))
-                # Divide by i1*i2
-                score = score/(len(instruments1)*len(mission2.instruments))
+        # Score instrument type
+        for type2 in instrument2.types:
+            if instrument1["type"] == type2.name:
+                score += 1
+                break
+        # Score instrument technology
+        if instrument1["technology"] == instrument2.technology:
+            score += 1
+        # Score instrument geometry
+        for geometry2 in instrument2.geometries:
+            if instrument1["geometry"] == geometry2.name:
+                score += 1
+                break
+        # Score instrument wavebands
+        for waveband2 in instrument2.wavebands:
+            for waveband1 in instrument1["wavebands"]:
+                if waveband1 == waveband2.name:
+                    score += 1/len(instrument1["wavebands"])
+                    break
         # Return instruments score
         return score
+
+    def instrumentsSimilarity(self, instruments1, instruments2):
+        score = 0.0
+        # Compute similarity matrix
+        N = max(len(instruments1),len(instruments2))
+        sim = np.zeros((N,N))
+        for i1 in range(len(instruments1)):
+            for i2 in range(len(instruments2)):
+                sim[i1,i2] = self.instrumentsScore(instruments1[i1],instruments2[i2])
+        # Find the best matches for i1xi2 (greedy)
+        for k in range(len(instruments1)):
+            i1i2 = np.argmax(sim)
+            i1 = i1i2 / N
+            i2 = i1i2 % N
+            score += sim[i1,i2]/len(instruments1)
+            sim[i1,:] = 0
+            sim[:,i2] = 0
+        return score
+
+    def instrumentsMatchDataset(self, instruments2):
+        matches = []
+        instruments1 = self.instrumentsDataset
+        N = len(instruments1)
+        M = len(instruments2)
+        # Compute similarity matrix
+        sim = np.zeros((N,M))
+        for i1 in range(N):
+            for i2 in range(M):
+                sim[i1,i2] = self.instrumentsScore(instruments1[i1],instruments2[i2])
+        # Find the best matches for i2
+        for i2 in range(M):
+            i1i2 = np.argmax(sim[:,i2])
+            i1 = i1i2 % N
+            matches.append([instruments1[i1]["alias"],instruments2[i2].name,sim[i1,i2]])
+        return matches
 
     def missionsSimilarity(self, orbit1, instruments1, missionsDatabase):
         maxScore = -1
@@ -96,12 +133,12 @@ class CRITIC:
             # If score bigger than a threshold
             if(score > 1):
                 # Get instruments similarities
-                score += self.instrumentsSimilarity(instruments1, mission2)
+                score += self.instrumentsSimilarity(instruments1, mission2.instruments)
             if score > maxScore:
                 maxScore = score
                 maxMission = mission2
         # Return result
-        return {"maxScore": maxScore, "maxMission": maxMission}
+        return [maxScore, maxMission]
 
     def p(self, l):
         if not l: return [[]]
@@ -114,10 +151,10 @@ class CRITIC:
         # For each instrument in each possible orbit (5*12=60)
         for orbit in self.orbitsDataset:
             for instrument in self.instrumentsDataset:
-                # Get similar instruments used in similar orbits
+                # Get similar instruments from the database
                 result = self.getSimilarInstruments(orbit, instrument)
                 # Write results to the output file
-                f.write(orbit["alias"]+":"+instrument["alias"]+":"+str(len(result))+":"+str([r.name for r in result])+"\n")
+                f.write(orbit["alias"]+"\t"+instrument["alias"]+"\t"+str(len(result))+"\t"+str([r.name for r in result])+"\n")
         f.close()
 
 
@@ -129,10 +166,11 @@ class CRITIC:
         # For each combination of instruments in each possible orbit ((2^12)*5 = 20480)
         for orbit1 in self.orbitsDataset:
             for instruments1 in self.p(self.instrumentsDataset):
+                # Get similar missions from the database
                 result = self.missionsSimilarity(orbit1, instruments1, missionsDatabase)
                 # Write results to the output file
                 if result["maxScore"] != -1:
-                    f.write(orbit1["alias"]+":"+str(sorted([i["alias"] for i in instruments1]))+":"+result["maxMission"].name+":"+str(result["maxScore"])+"\n")
+                    f.write(orbit1["alias"]+"\t"+str(sorted([i["alias"] for i in instruments1]))+"\t"+result[1].name+"\t"+str(result[0])+"\n")
         f.close()
 
     def criticizeArch(self, arch):
@@ -143,9 +181,11 @@ class CRITIC:
                 orbit = self.orbitsDataset[o]
                 instrument = next(ii for ii in self.instrumentsDataset if ii["alias"] == i)
                 res = self.getSimilarInstruments(orbit, instrument)
-                result.append("== Instrument "+instrument["alias"]+" in orbit "+orbit["alias"]+": "+ \
-                    str(len(res))+" matches"+" %s" % \
-                    (": "+", ".join([r.name for r in res[:2]])+("..." if len(res) > 1 else "") if len(res) > 0 else ""))
+                result.append([
+                    "database1",
+                    "Instrument "+instrument["alias"]+" in orbit "+orbit["alias"]+": "+str(len(res))+" matches",
+                    str(', '.join([r.name for r in res]))
+                ])
         # Type 2: Mission by mission
         missionsDatabase = self.session.query(models.Mission)
         for o in range(len(arch)):
@@ -153,8 +193,13 @@ class CRITIC:
             instruments = [next(ii for ii in self.instrumentsDataset if ii["alias"] == i) for i in arch[o]]
             res = self.missionsSimilarity(orbit, instruments, missionsDatabase)
             if len(instruments) > 0:
-                result.append("== The most similar mission to "+str([i["alias"] for i in instruments])+" in orbit "+ \
-                    orbit["alias"]+" is "+str(res["maxMission"].name)+ " with a score of "+str(res["maxScore"]))
+                result.append([
+                    "database2",
+                    "The most similar mission to "+str([i["alias"] for i in instruments])+" in orbit "+orbit["alias"]+ \
+                    " is: "+str(res[1].name)+" with a score of: "+str(round(res[0])),
+                    '<br>'.join(["Instrument similar to "+i[0]+" with a score of: "+str(round(i[2],2)) for i in \
+                        self.instrumentsMatchDataset(res[1].instruments)])
+                ])
         # Return result
         return result
 

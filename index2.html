@@ -104,27 +104,34 @@ body > div {
     text-transform: uppercase;
 }
 
-.alert-box:hover span{
-    display:block;
-    float:left;
-}
-
-.alert-box span{
-    background:#F8F8F8;
-    border: 5px solid #DFDFDF;
-    color: #717171;
-    font-size: 13px;
-    height: 30px;
-    letter-spacing: 1px;
-    line-height: 30px;
+.hot-spot {
+    display: inline-block;
+    background-color: #222;
+    border-radius: 12px;
+    color: #fff;
+    margin-left: 8px;
+    padding: auto;
     position: relative;
     text-align: center;
-    text-transform: uppercase;
-    top: 0px;
-    left:30px;
-    display:none;
-    padding:0 20px;
-    
+    width: 12px;
+    height: 12px;
+}
+
+.hot-spot:hover { 
+    background-color: #666;
+    cursor: pointer;
+}
+
+.tip {
+    display: none;
+    position: relative;
+    color:#000;
+    border-radius:10px;
+    font-family:Tahoma,Geneva,Arial,sans-serif;font-size:11px;
+    padding:10px;
+    margin-top:10px;
+    background: #e3f7fc;
+    border: 1px solid #8ed9f6;
 }
 
 .notice {
@@ -226,42 +233,42 @@ var yAxis = d3.svg.axis()
 var svg = d3.select(".div1").append("svg")
     .attr("width", width + margin.left + margin.right)
     .attr("height", height + margin.top + margin.bottom)
-  .append("g")
+    .append("g")
     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-  x.domain([0,0.25]);
-  y.domain([0,10000]);
+x.domain([0,0.25]);
+y.domain([0,10000]);
 
-  svg.append("g")
-      .attr("class", "x axis")
-      .attr("transform", "translate(0," + height + ")")
-      .call(xAxis)
+svg.append("g")
+    .attr("class", "x axis")
+    .attr("transform", "translate(0," + height + ")")
+    .call(xAxis)
     .append("text")
-      .attr("class", "label")
-      .attr("x", width)
-      .attr("y", -6)
-      .style("text-anchor", "end")
-      .text("Science");
+    .attr("class", "label")
+    .attr("x", width)
+    .attr("y", -6)
+    .style("text-anchor", "end")
+    .text("Science");
 
-  svg.append("g")
-      .attr("class", "y axis")
-      .call(yAxis)
+svg.append("g")
+    .attr("class", "y axis")
+    .call(yAxis)
     .append("text")
-      .attr("class", "label")
-      .attr("transform", "rotate(-90)")
-      .attr("y", 6)
-      .attr("dy", ".71em")
-      .style("text-anchor", "end")
-      .text("Cost")
+    .attr("class", "label")
+    .attr("transform", "rotate(-90)")
+    .attr("y", 6)
+    .attr("dy", ".71em")
+    .style("text-anchor", "end")
+    .text("Cost")
 
-    svg.selectAll(".dot")
-        .data(plotPoints)
-        .enter().append("circle")
-        .attr("class","dot")
-        .attr("r", 4)
-        .attr("cx", function(d) { return x(d.science)})
-        .attr("cy", function(d) { return y(d.cost)})
-        .style("fill", "red");
+svg.selectAll(".dot")
+    .data(plotPoints)
+    .enter().append("circle")
+    .attr("class","dot")
+    .attr("r", 4)
+    .attr("cx", function(d) { return x(d.science)})
+    .attr("cy", function(d) { return y(d.cost)})
+    .style("fill", "red");
 
 function resize() {
 
@@ -325,18 +332,30 @@ function displayMessages(messages) {
     var data = "";
     for(var i = 0; i < messages.length; i++) {
         var message = messages[i];
-        if(message.indexOf("==") != -1 ) {
-            data += "<div class='alert-box warning'><p>Database: </p>"+message.replace("==","")+"</div>";
-        } else if(message.indexOf(">>") != -1) {
-            data += "<div class='alert-box error'><p>Rule: </p>"+message.replace(">>","")+"</div>";
-        } else if(message.indexOf("<<") != -1) {
-            data += "<div class='alert-box notice'><p>Notice: </p>"+message.replace("<<","")+"</div>";
+        if(message[0] == "info") {
+            data += "<div class='alert-box notice'><p>Info: </p>"+message[1]+"</div>";
+        } else if(message[0] == "rules" ) {
+            data += "<div class='alert-box error'><p>Rules: </p>"+message[1]+"</div>";
+        } else if(message[0] == "database1") {
+            data += "<div class='alert-box warning'><p>Database1: </p>"+message[1];
+            if(message[2] != ""){ 
+                data += "<div class='hot-spot' onclick='showTip(event)'>i</div>";
+            }
+            data += "<div class='tip'>"+message[2]+"</div></div>";
+        } else if(message[0] == "database2") {
+            data += "<div class='alert-box warning'><p>Database2: </p>"+message[1]
+            data += "<div class='hot-spot' onclick='showTip(event)'>i</div>";
+            data += "<div class='tip'>"+message[2]+"</div></div>";
         }
     }
     $(".div2").html(data);
 }
 
-displayMessages(["<< Call criticize to show warnings and recomendations"]);
+function showTip(e) {
+    $(e.target).next(".tip").toggle();
+}
+
+displayMessages([["info","Call criticize to show warnings and recomendations"]]);
 
 // Div 3 Javascript code
 
@@ -387,12 +406,12 @@ function setArchitecture(architecture) {
 // Div 4 Javascript code
 
 $("#evaluate").click(function(event) {
-    displayMessages(["<< Evaluating architecture..."]);
+    displayMessages([["info","Evaluating architecture..."]]);
     ws_send({"event": "evaluate", "architecture": getArchitecture()});
 });
 
 $("#criticize").click(function(event) {
-    displayMessages(["<< Criticizing architecture..."]);
+    displayMessages([["info","Criticizing architecture..."]]);
     ws_send({"event": "criticize", "architecture": getArchitecture()});
 });
 
@@ -453,7 +472,7 @@ function open_ws(msg){
                 // Not used in this interface
 
             } else if(msg.type == "requestCriticize") {
-                displayMessages(["<< Criticizing architecture..."]);
+                displayMessages([["info","Criticizing architecture..."]]);
                 var msg = {"event": "criticize", "architecture": getArchitecture()};
                 ws_send(msg);
 
@@ -462,16 +481,16 @@ function open_ws(msg){
                 displayMessages(criticizeData);
 
             } else if(msg.type == "requestEvaluate") {
-                displayMessages(["<< Evaluating architecture..."]);
+                displayMessages([["info","Evaluating architecture..."]]);
                 var msg = {"event": "evaluate", "architecture": getArchitecture()};
                 ws_send(msg);
 
             } else if(msg.type == "evaluate") {
                 addPoint({
                     "science":msg.science,"cost":msg.cost,"architecture":getArchitecture()});
-                displayMessages(["<< Call criticize to show warnings and recomendations"]);
+                displayMessages([["info","Call criticize to show warnings and recomendations"]]);
             } else {
-                displayMessages(["<< Message from the server not indentified"]);
+                displayMessages([["info","Message from the server not indentified"]]);
             }
         }
 

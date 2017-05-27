@@ -164,7 +164,7 @@ function init() {
 
     // Create critic table
 
-    criticizeData = ["== Call criticize to show warnings"];
+    criticizeData = [["info","Call criticize to show warnings"]];
     drawCriticTable(0);
 
     material = new THREE.MeshLambertMaterial({color: 0xff666e});
@@ -654,8 +654,8 @@ function drawPlotPoint(filter) {
         material = new THREE.MeshBasicMaterial({color: 0xff0000});
     }
     mesh = new THREE.Mesh(new THREE.SphereGeometry(5, 4, 4), material);
-    mesh.position.x = -(plotPoints[plotPoints.length - 1].x*700)/0.35+350;
-    mesh.position.y = (plotPoints[plotPoints.length - 1].y*400)/8000-200;
+    mesh.position.x = -(plotPoints[plotPoints.length - 1].x*700)/0.28+350;
+    mesh.position.y = (plotPoints[plotPoints.length - 1].y*400)/10000-200;
     mesh.position.z = 0;
     points.add(mesh);
 
@@ -941,15 +941,17 @@ function drawCriticTable(index) {
     var i_max = (data.length < (index+1)*5) ? data.length : (index+1)*5;
 
     for(var i = i_min; i < i_max ; i++) {
-        var color = "blue";
-        if(data[i].includes("==")) {
+        var color = "green";
+        if(data[i][0] == "info") {
+            color = "blue";
+        } else if(data[i][0] == "rules") {
+            color = "red"
+        } else if(data[i][0] == "database1") {
             color = "orange";
-        } else if(data[i].includes(">>")) {
-            color = "red";
-        } else if(data[i].includes("<<")) {
-            color = "green";
+        } else if(data[i][0] == "database2") {
+            color = "orange";
         }
-        mesh = drawCriticRow(data[i],color);
+        mesh = drawCriticRow(data[i][1],color);
         mesh.position.set(-375,300-(i-i_min)*50,-400);
         criticizeGroup.add(mesh);
     }
@@ -1070,7 +1072,7 @@ function open_ws(msg){
                 ws_send(msg);
                 processing.visible = true;
             } else if(msg.type == "evaluate") {
-                criticizeData = ["== Call criticize to show warnings"];
+                criticizeData = [["info","Call criticize to show warnings"]];
                 drawCriticTable(0);
                 addPlotPoint(msg.science, msg.cost, architecture);
                 updatePoint();
