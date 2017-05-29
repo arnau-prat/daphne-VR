@@ -295,9 +295,9 @@ function resize() {
     svg.select('.y.axis')
         .call(yAxis);
 
-      // Update the tick marks
-      xAxis.ticks(w / 75);
-      yAxis.ticks(h / 75);
+    // Update the tick marks
+    xAxis.ticks(w / 75);
+    yAxis.ticks(h / 75);
 
     svg.selectAll('.dot')
         .attr("cx", function(d) { return x(d.science)})
@@ -323,7 +323,7 @@ function addPoint(point) {
         .attr("r", 4)
         .attr("cx", function(d) { return x(d.science)})
         .attr("cy", function(d) { return y(d.cost)})
-        .style("fill", "ff0000"); // Read
+        .style("fill", "ff0000"); // Red
 }
 
 // Div 2 Javascript code
@@ -343,7 +343,7 @@ function displayMessages(messages) {
             }
             data += "<div class='tip'>"+message[2]+"</div></div>";
         } else if(message[0] == "database2") {
-            data += "<div class='alert-box warning'><p>Database2: </p>"+message[1]
+            data += "<div class='alert-box warning'><p>Database2: </p>"+message[1];
             data += "<div class='hot-spot' onclick='showTip(event)'>i</div>";
             data += "<div class='tip'>"+message[2]+"</div></div>";
         }

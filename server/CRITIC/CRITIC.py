@@ -79,8 +79,8 @@ class CRITIC:
                 score += 1
                 break
         # Score instrument wavebands
-        for waveband2 in instrument2.wavebands:
-            for waveband1 in instrument1["wavebands"]:
+        for waveband1 in instrument1["wavebands"]:
+            for waveband2 in instrument2.wavebands:
                 if waveband1 == waveband2.name:
                     score += 1/len(instrument1["wavebands"])
                     break
@@ -114,7 +114,7 @@ class CRITIC:
         sim = np.zeros((N,M))
         for i1 in range(N):
             for i2 in range(M):
-                sim[i1,i2] = self.instrumentsScore(instruments1[i1],instruments2[i2])
+                sim[i1,i2] = (self.instrumentsScore(instruments1[i1],instruments2[i2])*10)/4
         # Find the best matches for i2
         for i2 in range(M):
             i1i2 = np.argmax(sim[:,i2])
@@ -138,7 +138,7 @@ class CRITIC:
                 maxScore = score
                 maxMission = mission2
         # Return result
-        return [maxScore, maxMission]
+        return [(maxScore*10)/6, maxMission]
 
     def p(self, l):
         if not l: return [[]]
@@ -183,7 +183,7 @@ class CRITIC:
                 res = self.getSimilarInstruments(orbit, instrument)
                 result.append([
                     "database1",
-                    "Instrument "+instrument["alias"]+" in orbit "+orbit["alias"]+": "+str(len(res))+" matches",
+                    "Instrument %s in orbit %s: %d matches" % (instrument["alias"], orbit["alias"], len(res)),
                     str(', '.join([r.name for r in res]))
                 ])
         # Type 2: Mission by mission
@@ -195,10 +195,10 @@ class CRITIC:
             if len(instruments) > 0:
                 result.append([
                     "database2",
-                    "The most similar mission to "+str([i["alias"] for i in instruments])+" in orbit "+orbit["alias"]+ \
-                    " is: "+str(res[1].name)+" with a score of: "+str(round(res[0])),
-                    '<br>'.join(["Instrument similar to "+i[0]+" with a score of: "+str(round(i[2],2)) for i in \
-                        self.instrumentsMatchDataset(res[1].instruments)])
+                    "The most similar mission to %s in orbit %s is %s (score: %.2f)" % \
+                    (str([i["alias"] for i in instruments]), orbit["alias"], res[1].name, res[0]),
+                    '<br>'.join(["Instrument similar to %s (score: %.2f)" % \
+                    (i[0], i[2]) for i in self.instrumentsMatchDataset(res[1].instruments)])
                 ])
         # Return result
         return result
