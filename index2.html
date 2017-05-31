@@ -445,7 +445,7 @@ function ws_send(msg){
 
 function open_ws(msg){
     if(typeof(ws) == 'undefined' || ws.readyState === undefined || ws.readyState > 1){
-        ws = new WebSocket("ws://52.14.7.76/websocket/visual");
+        ws = new WebSocket("wss://www.selva-research.com/websocket/visual");
         ws.onopen = function(){
             console.log("ws open");
             if( msg.length != 0 ){

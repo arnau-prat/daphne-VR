@@ -7,7 +7,7 @@ lines = [line.rstrip() for line in open(in_filename)]
 
 f = open(out_filename, 'w')
 
-address = "ws://52.14.7.76/websocket/visual"
+address = "wss://www.selva-research.com/websocket/visual"
 ws = websocket.create_connection(address)
 
 instruments = ['A','B','C','D','E','F','G','H','I','J','K','L']

@@ -108,9 +108,9 @@ class Mission(DeclarativeBase):
     orbit_period = Column('orbit_period', String, nullable=True)
     orbit_sense = Column('orbit_sense', String, nullable=True)
     orbit_inclination = Column('orbit_inclination', String, nullable=True)
-    orbit_altitude = Column('orbit_altitude', String, nullable=True)
+    orbit_altitude = Column('orbit_altitude', Integer, nullable=True)
     orbit_longitude = Column('orbit_longitude', String, nullable=True)
-    orbit_LST = Column('orbit_LST', String, nullable=True)
+    orbit_LST = Column('orbit_lst2', String, nullable=True)
     repeat_cycle = Column('repeat_cycle', String, nullable=True)
 
     agencies = relationship('Agency', secondary=operators_table, back_populates='missions')

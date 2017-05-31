@@ -4,7 +4,7 @@
 <title>Control daphne remote</title>
 <style>
 .button {
-	background-color: #4CAF50;
+    background-color: #4CAF50;
     border: none;
     color: white;
     padding: 60px 32px;
@@ -37,7 +37,7 @@ input {
 
 <input id="inputID" type="text" value=""></input>
 
-<script src="http://52.14.7.76/daphne-VR/js/jquery.min.js"></script>
+<script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
 
 <script>
 
@@ -45,11 +45,11 @@ function myFunction(type) {
 
     idValue = $('#inputID').val();
 
-	if(type == "evaluate") {
-		ws_send({"event":"evaluate","id": idValue});
-	} else {
-		ws_send({"event":"criticize","id": idValue});
-	}
+    if(type == "evaluate") {
+        ws_send({"event":"evaluate","id": idValue});
+    } else {
+        ws_send({"event":"criticize","id": idValue});
+    }
 }
 
 // ----- Web sockets
@@ -79,7 +79,7 @@ function ws_send(msg){
 
 function open_ws(msg){
     if(typeof(ws) == 'undefined' || ws.readyState === undefined || ws.readyState > 1){
-        ws = new WebSocket("ws://52.14.7.76/websocket/audio");
+        ws = new WebSocket("wss://www.selva-research.com/websocket/audio");
         ws.onopen = function(){
             console.log("ws open");
             if( msg.length != 0 ){

@@ -10,7 +10,7 @@ class CRITIC:
     session = sessionmaker(bind=engine)()
 
     orbitsDataset = [
-        {"alias": "1", "name": "LEO-600-polar-NA", "type": "Inclined, non-sun-synchronous","altitude": 600,"LST":"ANY"},
+        {"alias": "1", "name": "LEO-600-polar-NA", "type": "Inclined, non-sun-synchronous","altitude": 600,"LST":""},
         {"alias": "2", "name": "SSO-600-SSO-AM", "type": "Sun-synchronous", "altitude": 600, "LST": "AM"},
         {"alias": "3", "name": "SSO-600-SSO-DD", "type": "Sun-synchronous", "altitude": 600, "LST": "DD"},
         {"alias": "4", "name": "SSO-800-SSO-DD", "type": "Sun-synchronous", "altitude": 800, "LST": "DD"},
@@ -42,7 +42,9 @@ class CRITIC:
             .filter(models.Instrument.missions.any( \
                 models.Mission.orbit_type == orbit["type"])) \
             .filter(models.Instrument.missions.any( \
-                models.Mission.orbit_altitude.between(orbit["altitude"]-50, orbit["altitude"]+50)))
+                models.Mission.orbit_altitude.between(orbit["altitude"]-50, orbit["altitude"]+50))) \
+            .filter(models.Instrument.missions.any( \
+                models.Mission.orbit_LST == orbit["LST"]))
         # Return result
         result = query.all()
         return result
@@ -138,7 +140,7 @@ class CRITIC:
                 maxScore = score
                 maxMission = mission2
         # Return result
-        return [(maxScore*10)/6, maxMission]
+        return [(maxScore*10)/7, maxMission]
 
     def p(self, l):
         if not l: return [[]]
