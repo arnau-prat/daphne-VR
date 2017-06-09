@@ -26,10 +26,6 @@ var closet = {x: 0, y: -50, z: 50};
 
 var w_shelf = 300, h_shelf = 10, n_shelf = 5;
 
-var dash1 = {x: 300, y: 0, z: 0};
-
-var dash2 = {x: -300, y: 0, z: 0};
-
 var plot = {x: 0, y: 150, z: 500, w: 700, h: 400};
 
 var xLabel = ["0", "0.04", "0.08", "0.12", "0.16", "0.20", "0.24"],
@@ -133,15 +129,20 @@ function init() {
     mesh.position.set(closet.x, closet.y, closet.z);
     scene.add(mesh);
 
-    //Create initial architecture (Instruments AB, C, D, E, F)
+    //Create initial architecture
 
-    architecture[0] = 'AB';
-    architecture[1] = 'C';
-    architecture[2] = 'D';
-    architecture[3] = 'E';
-    architecture[4] = 'F';
-
+    architecture = ["AGHL","JK","","","BH"];
     repositionInstruments();
+
+    // Load data
+
+    d3.dsv(":")("lib/EOSS_data.csv", function(error, data) {
+        data.forEach(function(d) {
+            plotPoints.push({x:parseFloat(d.science),y:parseFloat(d.cost),
+                architecture:JSON.parse(d.architecture)});
+        });
+        updatePoint();
+    });
 
     processing = createGridElement("SERVER WORKING", 4000, 400, 400, 40);
     processing.rotation.y = Math.PI;
@@ -150,12 +151,12 @@ function init() {
     processing.visible = false;
 
     mesh = drawDashBoard1();
-    mesh.position.set(dash1.x,dash1.y,dash1.z);
+    mesh.position.set(300, 0, 0);
     mesh.rotation.y = -Math.PI/2;
     scene.add(mesh);
 
     mesh = drawDashBoard2();
-    mesh.position.set(dash2.x,dash2.y,dash2.z);
+    mesh.position.set(-300, 0, 0);
     scene.add(mesh);
 
     mesh = drawPlotGrid();
@@ -944,12 +945,14 @@ function drawCriticTable(index) {
         var color = "green";
         if(data[i][0] == "info") {
             color = "blue";
-        } else if(data[i][0] == "rules") {
+        } else if(data[i][0] == "expert") {
             color = "red"
-        } else if(data[i][0] == "database1") {
+        } else if(data[i][0] == "historian1") {
             color = "orange";
-        } else if(data[i][0] == "database2") {
+        } else if(data[i][0] == "historian2") {
             color = "orange";
+        } else if(data[i][0] == "analyst") {
+            color = "green";
         }
         mesh = drawCriticRow(data[i][1],color);
         mesh.position.set(-375,300-(i-i_min)*50,-400);
@@ -1049,8 +1052,8 @@ function open_ws(msg){
             if(msg.type == "register") {
                 register = true;
                 alert("Your session ID is: "+msg.id);
-                processing.visible = true;
-                ws_send({"event":"initPoint","index":0});
+                //processing.visible = true;
+                //ws_send({"event":"initPoint","index":0});
             } else  if(msg.type == "initPoint") {
                 architecture = msg.architecture;
                 addPlotPoint(msg.science,msg.cost,architecture);

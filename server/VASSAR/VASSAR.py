@@ -32,7 +32,7 @@ class VASSAR:
         result = self.rbsaeoss.criticizeArch(input_arch)
         output_res = []
         for r in result:
-            output_res.append(["rules",str(r)])
+            output_res.append(["expert",str(r)])
         output_res = self.convertOutput(output_res)
         return output_res
 

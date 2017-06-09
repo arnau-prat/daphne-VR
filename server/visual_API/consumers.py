@@ -66,6 +66,13 @@ def ws_message(message):
         message.reply_channel.send({"text": json.dumps({
             "type": "criticize", "data": result})})
 
+    elif msg["event"] == "experiment":
+        print "Event experiment"
+        # Write experiment data
+        filename = str("../../critic_experiment/res/%s.txt" % msg["id"])
+        with open(filename, 'a+') as file:
+            file.write(msg["data"])
+
     else:
         print msg
 

@@ -3,12 +3,15 @@
 <head>
 <title>Daphne 2D interface</title>
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
-<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+<link rel="stylesheet" href="lib/shepherd-theme-arrows.css"/>
+<link rel="stylesheet" href="lib/welcome.css"/>
+<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css"/>
+
 <style>
 
 html, body {
     padding: 0; 
-    margin: 0; 
+    margin: 0;
     font: 10px sans-serif;
 }
 
@@ -26,6 +29,49 @@ body > div {
     background: red;
 }
 
+.modalBox {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background: rgba(0,0,0,0.8); 
+    z-index: 99999;
+}
+
+.modalBox:target {
+    opacity:0;
+    pointer-events: auto;
+}
+
+.modalBox > div {
+    width: 600px;
+    height: auto;
+    position: relative;
+    margin: 10% auto;
+    padding: 20px;
+    font-size: 15px;
+    border-radius: 10px;
+    background: #fff;
+}
+
+.close {
+    background: #606061;
+    color: #FFFFFF;
+    line-height: 25px;
+    position: absolute;
+    right: -12px;
+    text-align: center;
+    top: -10px;
+    width: 24px;
+    text-decoration: none;
+    font-weight: bold;
+    border-radius: 12px;
+    box-shadow: 1px 1px 3px #000;
+}
+
+.close:hover { background: #00d9ff; }
+
 .div1 { background: #DDD; top:0; left:0; bottom:300px; width:50%; }
 .div2 { background: #AAA; top:0; right:0; bottom:300px; width:50%; overflow-y: scroll;}
 .div3 { background: #777; bottom: 0; left:0; height: 300px; width:50%; }
@@ -33,28 +79,43 @@ body > div {
 
 .trash {
     float: left;
-    width: 50px;
-    height: 50px;
-    background: red;
-}
-
-.button {
-    float: left;
-    height: 50px;
-    margin:50px;
-    background: green;
+    margin: 8px;
+    padding: 10px;
+    text-align: center;
+    font-size: 12px;
+    line-height:20px;
+    width: 204px;
+    height: 20px;
+    background: #ff0000;
+    background-size: cover;
 }
 
 .instrument {
     float:left;
     width: 40px;
     height: 40px;
-    margin: 10px;
+    margin: 8px;
+    cursor: pointer;
     font-size: 20px;
     border: 2px solid #333;
     background: #fff;
     line-height: 40px;
     text-align: center;
+}
+
+.countdown {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    padding:10px;
+    background: #fff;
+}
+
+.ui-button {
+    width: 50px;
+    font-size: 12px;
+    margin-top: 8px;
+    margin-left: 8px;
 }
 
 .orbit {
@@ -63,11 +124,23 @@ body > div {
     height: 60px;
 }
 
+.orbit:before {
+    content: attr(name);
+    position: relative;
+    float: left;
+    padding: 10px;
+    margin-right: 10px;
+    line-height: 40px;
+    font-size: 20px;
+    background: rgba(255,255,255,0.4);
+}
+
 .orbit div {
     float:left;
     width: 40px;
     height: 40px;
-    margin: 10px;
+    margin: 8px;
+    cursor: pointer;
     font-size: 20px;
     border: 2px solid #333;
     background: #fff;
@@ -77,10 +150,14 @@ body > div {
 
 .i-container {
     position: relative;
-    outline: 1px solid green;
-    width: 60%;
+    width: 250px;
     margin:auto;
     font: 16pt sans-serif;
+}
+
+.e-container, .c-container {
+    display: inline-block;
+    position: relative;
 }
 
 .orbit {
@@ -92,8 +169,9 @@ body > div {
     display: block;
     position: relative;
     color:#000;
-    border-radius:10px;
-    font-family:Tahoma,Geneva,Arial,sans-serif;font-size:11px;
+    border-radius: 10px;
+    font-family:Tahoma,Geneva;
+    font-size:12px;
     padding:10px;
     margin:10px;
 }
@@ -101,7 +179,6 @@ body > div {
 .alert-box p {
     display: inline;
     font-weight: bold;
-    text-transform: uppercase;
 }
 
 .hot-spot {
@@ -139,14 +216,19 @@ body > div {
     border: 1px solid #8ed9f6;
 }
 
-.warning {
-    background: #fff8c4;
-    border:1px solid #f2c779;
+.expert {
+    background: #ffecec;
+    border:1px solid #f5aca6;
 }
 
-.error {
-    background: #ffecec;
-    border: 1px solid #f5aca6;
+.historian {
+    background: #fff8c4;
+    border: 1px solid #f2c779;
+}
+
+.analyst {
+    background: #e9fae7;
+    border: 1px solid #a2c8c7;
 }
 
 .axis path,
@@ -165,6 +247,12 @@ body > div {
 </head>
 <body>
 
+<div class="modalBox" style="display:none;">
+    <div>
+        <a href="#" class="close" onClick="$('.modalBox').css('display','none');">X</a>
+    </div>
+</div>
+
 <div class="id">None</div>
 
 <div class="div1"></div>
@@ -172,36 +260,44 @@ body > div {
 <div class="div2"></div>
 
 <div class="div3">
-    <div class="orbit" id="orbit1" style="background:red;"><div></div></div>
-    <div class="orbit" id="orbit2" style="background:blue;"><div></div></div>
-    <div class="orbit" id="orbit3" style="background:red;"><div></div></div>
-    <div class="orbit" id="orbit4" style="background:blue;"><div></div></div>
-    <div class="orbit" id="orbit5" style="background:red;"><div></div></div>
+    <div class="orbit" id="orbit1" name="1" style="background:red;"><div></div></div>
+    <div class="orbit" id="orbit2" name="2" style="background:blue;"><div></div></div>
+    <div class="orbit" id="orbit3" name="3" style="background:red;"><div></div></div>
+    <div class="orbit" id="orbit4" name="4" style="background:blue;"><div></div></div>
+    <div class="orbit" id="orbit5" name="5" style="background:red;"><div></div></div>
 </div>
 
 <div class="div4">
     <div class="i-container">
-            <div class="instrument" data-id="A">A</div>
-            <div class="instrument" data-id="B">B</div>
-            <div class="instrument" data-id="C">C</div>
-            <div class="instrument" data-id="D">D</div>
-            <div class="instrument" data-id="E">E</div>
-            <div class="instrument" data-id="F">F</div>
-            <div class="instrument" data-id="G">G</div>
-            <div class="instrument" data-id="H">H</div>
-            <div class="instrument" data-id="I">I</div>
-            <div class="instrument" data-id="J">J</div>
-            <div class="instrument" data-id="K">K</div>
-            <div class="instrument" data-id="L">L</div>
+            <div class="instrument" name="A">A</div>
+            <div class="instrument" name="B">B</div>
+            <div class="instrument" name="C">C</div>
+            <div class="instrument" name="D">D</div>
+            <div class="instrument" name="E">E</div>
+            <div class="instrument" name="F">F</div>
+            <div class="instrument" name="G">G</div>
+            <div class="instrument" name="H">H</div>
+            <div class="instrument" name="I">I</div>
+            <div class="instrument" name="J">J</div>
+            <div class="instrument" name="K">K</div>
+            <div class="instrument" name="L">L</div>
+            <div class="trash">DELETE INSTRUMENT</div>
     </div>
-    <div class="trash"></div>
+    <div class="e-container">
     <a class="ui-button ui-widget ui-corner-all" id="evaluate" href="#">Evaluate</a>
+    </div>
+    <div class="c-container">
     <a class="ui-button ui-widget ui-corner-all" id="criticize" href="#">Criticize</a>
+</div>
+    <div class="countdown"></div>
 </div>
 
 <script type="text/javascript" src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
 <script type="text/javascript" src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
-<script src="//d3js.org/d3.v3.min.js"></script>
+<script type="text/javascript" src="//d3js.org/d3.v3.min.js"></script>
+
+<script type="text/javascript" src="lib/tether.js"></script>
+<script type="text/javascript" src="lib/shepherd.js"></script>
 
 <script>
 
@@ -261,18 +357,30 @@ svg.append("g")
     .style("text-anchor", "end")
     .text("Cost")
 
-svg.selectAll(".dot")
-    .data(plotPoints)
-    .enter().append("circle")
-    .attr("class","dot")
-    .attr("r", 4)
-    .attr("cx", function(d) { return x(d.science)})
-    .attr("cy", function(d) { return y(d.cost)})
-    .style("fill", "red");
+// Load data
+d3.dsv(":")("lib/EOSS_data.csv", function(error, data) {
+    data.forEach(function(d) {
+        d.science = +d.science;
+        d.cost = +d.cost;
+        plotPoints.push({
+            "science":d.science,"cost":d.cost,"architecture":""
+        });
+    });
+
+    svg.selectAll(".dot")
+        .data(data)
+        .enter().append("circle")
+        .attr("class","dot")
+        .attr("r", 3.5)
+        .attr("cx", function(d) { return x(d.science)})
+        .attr("cy", function(d) { return y(d.cost)})
+        .style("fill", "#ffff00");
+});
 
 function resize() {
 
-    var w = parseInt(d3.select(".div1").style("width")), h = parseInt(d3.select(".div1").style("height")),
+    var w = parseInt(d3.select(".div1").style("width")), 
+        h = parseInt(d3.select(".div1").style("height")),
     width = w - margin.left - margin.right,
     height = h - margin.top - margin.bottom;
 
@@ -311,7 +419,7 @@ resize();
 function addPoint(point) {
 
     svg.selectAll('.dot')
-        .attr("r", 4)
+        .attr("r", 3.5)
         .style("fill", "#ffff00"); // Yellow
 
     plotPoints.push(point);
@@ -320,7 +428,7 @@ function addPoint(point) {
         .data(plotPoints)
         .enter().append("circle")
         .attr("class","dot")
-        .attr("r", 4)
+        .attr("r", 3.5)
         .attr("cx", function(d) { return x(d.science)})
         .attr("cy", function(d) { return y(d.cost)})
         .style("fill", "ff0000"); // Red
@@ -333,19 +441,27 @@ function displayMessages(messages) {
     for(var i = 0; i < messages.length; i++) {
         var message = messages[i];
         if(message[0] == "info") {
-            data += "<div class='alert-box notice'><p>Info: </p>"+message[1]+"</div>";
-        } else if(message[0] == "rules" ) {
-            data += "<div class='alert-box error'><p>Rules: </p>"+message[1]+"</div>";
-        } else if(message[0] == "database1") {
-            data += "<div class='alert-box warning'><p>Database1: </p>"+message[1];
-            if(message[2] != ""){ 
+            data += "<div class='alert-box notice'><p>Info </p>"+message[1]+"</div>";
+        } else if(message[0] == "expert" ) {
+            data += "<div class='alert-box expert'><p>Expert </p>"+message[1]+"</div>";
+        } else if(message[0] == "historian1") {
+            data += "<div class='alert-box historian'><p>Historian </p>"+message[1];
+            if(message[2] != null){ 
                 data += "<div class='hot-spot' onclick='showTip(event)'>i</div>";
             }
             data += "<div class='tip'>"+message[2]+"</div></div>";
-        } else if(message[0] == "database2") {
-            data += "<div class='alert-box warning'><p>Database2: </p>"+message[1];
-            data += "<div class='hot-spot' onclick='showTip(event)'>i</div>";
+        } else if(message[0] == "historian2") {
+            data += "<div class='alert-box historian'><p>Historian </p>"+message[1];
+            if(message[2] != null) {
+                data += "<div class='hot-spot' onclick='showTip(event)'>i</div>";
+            }
             data += "<div class='tip'>"+message[2]+"</div></div>";
+        } else if(message[0] == "analyst") {
+            data += "<div class='alert-box analyst'><p>Analyst </p>"+message[1];
+            if(message[2] != null) {
+                data += "<div class='hot-spot' onclick='showTip(event)'>i</div>";
+            }
+            data += "<idv class='tip'>"+message[2]+"</div></div>";
         }
     }
     $(".div2").html(data);
@@ -361,12 +477,14 @@ displayMessages([["info","Call criticize to show warnings and recomendations"]])
 
 $('.instrument').draggable({
     connectWith: '.orbit',
+    containment: "window",
     helper: 'clone',
     cursor: 'pointer'
 });
 
 $('.orbit').sortable({
     connectWith: '.orbit',
+    containment: "window",
     cursor: 'pointer'
 }).droppable({
     accept: '.instrument',
@@ -406,14 +524,166 @@ function setArchitecture(architecture) {
 // Div 4 Javascript code
 
 $("#evaluate").click(function(event) {
+    var architecture = getArchitecture();
     displayMessages([["info","Evaluating architecture..."]]);
+    // Experiment
+    registerAction("evaluate", architecture);
     ws_send({"event": "evaluate", "architecture": getArchitecture()});
 });
 
 $("#criticize").click(function(event) {
+    var architecture = getArchitecture();
     displayMessages([["info","Criticizing architecture..."]]);
+    // Experiment
+    registerAction("criticize", architecture);
     ws_send({"event": "criticize", "architecture": getArchitecture()});
 });
+
+// Experiment code
+
+var sessionId = -1;
+
+var tour = new Shepherd.Tour({
+    defaults: {
+        classes: 'shepherd-element shepherd-open shepherd-theme-arrows'
+    }
+});
+
+tour.addStep('Welcome 1', {
+    title: 'Experiment overview',
+    text: ["In this experiment, you will design a constellation of satellites for Earth observation. Don't worry if you don't know much about the topic since all the details have been left out so that you will only deal with simple numbers and letters.","A design (i.e. satellite constellation) is defined by what instruments (sensors) are used in each spacecraft, and the orbits those spacecrafts fly.","The real name of orbits and instruments were changed to numbers and letter respectively to simplify the task. There are a total of 5 candidate orbits and 12 measurement instruments.","<img src='img/img1.jpg' width=570px height=210px></img>"],
+    attachTo: 'body',
+    advanceOn: '.docs-link click'
+});
+
+tour.addStep('Welcome 2', {
+    title: 'Orbits',
+    text: ["Each row represents an orbit."],
+    attachTo: '.div3 top',
+    advanceOn: '.docs-link click'
+});
+
+tour.addStep('Welcome 3', {
+    title: 'Instrument',
+    text: ["Each block represents an instrument."],
+    attachTo: '.div4 top',
+    advanceOn: '.docs-link click'
+});
+
+tour.addStep('Welcome 4', {
+    title: 'Your first design',
+    text: ["Drag instrument A to orbit 3."],
+    attachTo: '.div4 top',
+    advanceOn: '.docs-link click'
+});
+
+tour.addStep('Welcome 5', {
+    title: 'Your first design',
+    text: ["Click to evaluate your design."],
+    attachTo: '.e-container left',
+    advanceOn: '.docs-link click'
+});
+
+tour.addStep('Welcome 6', {
+    title: 'Your first design',
+    text: ["Your design should appear as a red dot."],
+    attachTo: '.div1 right',
+    advanceOn: '.docs-link click'
+});
+
+tour.addStep('Welcome 7', {
+    title: 'Evaluate',
+    text: ["Each design has a science benefit and cost. The science benefit is a number that tells us how much value each design brings to the climate monitoring community. The cost is a measure of how much it is going to cost (in million dollars) to design, implement, launch and operate those systems. Naturally, low-cost and high-science designs are desirable.", "Your task is to make a design which is as close to the blue point in the figure as possible.","<img src='img/img2.jpg' width=570px height=210px></img>"],
+    attachTo: '.body',
+    advanceOn: '.docs-link click'
+});
+
+tour.addStep('Welcome 8', {
+    title: 'Your first design',
+    text: ["Click to criticize your design."],
+    attachTo: '.c-container left',
+    advanceOn: '.docs-link click'
+});
+
+tour.addStep('Welcome 9', {
+    title: 'Your first design',
+    text: ["The result of the criticize should appear here."],
+    attachTo: '.div2 left',
+    advanceOn: '.docs-link click'
+});
+
+tour.addStep('Welcome 10', {
+    title: 'Criticize',
+    text: ["The critic agent will give you very valuable information in order to improve your design.","...","<img src='img/img3.jpg' width=570px height=150px></img>"],
+    attachTo: '.body',
+    advanceOn: '.docs-link click'
+});
+
+tour.addStep('Welcome 11', {
+    title: 'Criticize',
+    text: ["Move instrument A to orbit 1 as the critic agent suggest and evaluate your design."],
+    attachTo: '.div2 left',
+    advanceOn: '.docs-link click'
+});
+
+tour.addStep('Welcome 12', {
+    title: 'Criticize',
+    text: ["You should see that the  science benefit of your desing has improved."],
+    attachTo: '.div1 right',
+    advanceOn: '.docs-link click'
+});
+
+tour.addStep('Welcome 13', {
+    title: 'Criticize',
+    text: ["Try also to take advantatge of the database1 and database2 suggestions."],
+    attachTo: '.div2 left',
+    advanceOn: '.docs-link click'
+});
+
+tour.addStep('Welcome 14', {
+    title: 'Your first design',
+    text: ["You will have 15 minutes to find the best design."],
+    attachTo: '.countdown top',
+    buttons: [
+        {
+            text: 'Start',
+            action:  function() { startTimer(); return tour.hide();}
+        }]
+});
+
+$(window).load(function(){
+    //tour.start();
+});
+
+function registerAction(type, data) {
+    var date = new Date();
+    var data = date.toLocaleTimeString()+" "+type+" "+data;
+    console.log(data);
+    ws_send({"event": "experiment", "id": sessionId, "data": data});
+}
+
+var timer2 = "15:00";
+
+$('.countdown').html(timer2);
+
+function startTimer() {
+    var interval = setInterval(function() {
+        var timer = timer2.split(':');
+        var minutes = parseInt(timer[0], 10);
+        var seconds = parseInt(timer[1], 10);
+        --seconds;
+        minutes = (seconds < 0) ? --minutes : minutes;
+        if (minutes < 0) { 
+            clearInterval(interval);
+            alert("Thank you for participating!");
+        }
+        seconds = (seconds < 0) ? 59 : seconds;
+        seconds = (seconds < 10) ? '0' + seconds : seconds;
+
+        $('.countdown').html(minutes + ':' + seconds);
+        timer2 = minutes + ':' + seconds;
+    }, 1000);
+}
 
 // Webscokets and backend Javascript code
 
@@ -459,8 +729,9 @@ function open_ws(msg){
 
             if(msg.type == "register") {
                 register = true;
+                sessionId = msg.id;
                 $(".id").html("Your session ID is: "+msg.id);
-                ws_send({"event":"initPoint","index":0});
+                //ws_send({"event":"initPoint","index":0});
 
             } else if(msg.type == "initPoint") {
                 setArchitecture(msg.architecture);

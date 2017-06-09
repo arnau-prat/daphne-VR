@@ -142,6 +142,10 @@ class CRITIC:
         # Return result
         return [(maxScore*10)/7, maxMission]
 
+    def matchFeatures(self, arch):
+        res = []
+        return res
+
     def p(self, l):
         if not l: return [[]]
         return self.p(l[1:]) + [[l[0]] + x for x in self.p(l[1:])]
@@ -183,10 +187,18 @@ class CRITIC:
                 orbit = self.orbitsDataset[o]
                 instrument = next(ii for ii in self.instrumentsDataset if ii["alias"] == i)
                 res = self.getSimilarInstruments(orbit, instrument)
-                result.append([
-                    "database1",
-                    "Instrument %s in orbit %s: %d matches" % (instrument["alias"], orbit["alias"], len(res)),
-                    str(', '.join([r.name for r in res]))
+                if len(res) == 0:
+                    result.append([
+                        "historian1",
+                        "Instrument %s has never been flown in orbit %s before" % \
+                             (instrument["alias"], orbit["alias"])
+                    ])
+                else:
+                    result.append([
+                        "historian1",
+                        "Instrument %s has been flown in orbit %s before (%s matches in the database)" % \
+                            (instrument["alias"], orbit["alias"], len(res)),
+                        str(', '.join([r.name for r in res]))
                 ])
         # Type 2: Mission by mission
         missionsDatabase = self.session.query(models.Mission)
@@ -195,12 +207,33 @@ class CRITIC:
             instruments = [next(ii for ii in self.instrumentsDataset if ii["alias"] == i) for i in arch[o]]
             res = self.missionsSimilarity(orbit, instruments, missionsDatabase)
             if len(instruments) > 0:
+                if res[0] < 6:
+                    result.append([
+                        "historian2",
+                        "There are no similar missions to %s in orbit %s in the database" % \
+                            (str([i["alias"] for i in instruments]), orbit["alias"])
+                    ])
+                else:
+                    result.append([
+                        "historian2",
+                        "The most similar mission to %s in orbit %s is %s (score: %.2f/10)" % \
+                            (str([i["alias"] for i in instruments]), orbit["alias"], res[1].name, res[0]),
+                        '<br>'.join(["Instrument similar to %s (score: %.2f)" % \
+                            (i[0], i[2]) for i in self.instrumentsMatchDataset(res[1].instruments)])
+                    ])
+        # Analyst
+        if len(''.join(arch)) > 0:
+            res = self.matchFeatures(arch)
+            if len(res) == 0:
                 result.append([
-                    "database2",
-                    "The most similar mission to %s in orbit %s is %s (score: %.2f)" % \
-                    (str([i["alias"] for i in instruments]), orbit["alias"], res[1].name, res[0]),
-                    '<br>'.join(["Instrument similar to %s (score: %.2f)" % \
-                    (i[0], i[2]) for i in self.instrumentsMatchDataset(res[1].instruments)])
+                    "analyst",
+                    "There doesn't seem to be any good features in your design"
+                ])
+            else:
+                result.append([
+                    "analyst",
+                    "There seems to be %d good features in your design" % len(res),
+                    '<br>'.join(["Feature %s" % r for r in res])
                 ])
         # Return result
         return result
