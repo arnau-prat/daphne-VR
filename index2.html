@@ -77,6 +77,13 @@ body > div {
 .div3 { background: #777; bottom: 0; left:0; height: 300px; width:50%; }
 .div4 { background: #444; bottom: 0; right:0; height: 300px; width:50%;  }
 
+.score {
+    position: absolute;
+    top: 40px;
+    right: 40px;
+    font-size:12px;
+}
+
 .trash {
     float: left;
     margin: 8px;
@@ -103,7 +110,12 @@ body > div {
     text-align: center;
 }
 
-.countdown {
+.instrument.inactive {
+    cursor: default;
+    background: #737373;
+}
+
+.timer {
     position: absolute;
     bottom: 0;
     left: 0;
@@ -119,7 +131,8 @@ body > div {
 }
 
 .orbit {
-    float:left;
+    position: relative;
+    float: left;
     width: 100%;
     height: 60px;
 }
@@ -133,6 +146,27 @@ body > div {
     line-height: 40px;
     font-size: 20px;
     background: rgba(255,255,255,0.4);
+}
+
+.orbit:nth-child(even) {
+    background: #0000ff;
+
+}
+
+.orbit:nth-child(odd) {
+    background: #ff0000;
+}
+
+.orbit.inactive:after {
+    position: absolute;
+    width: 80%;
+    margin-left: 10px;
+    left: 10%;
+    height: 8px;
+    margin-top: -4px;
+    top: 50%;
+    content: "";
+    background: white;
 }
 
 .orbit div {
@@ -159,11 +193,6 @@ body > div {
     display: inline-block;
     position: relative;
 }
-
-.orbit {
-    position: relative;
-}
-
 
 .alert-box {
     display: block;
@@ -231,6 +260,11 @@ body > div {
     border: 1px solid #a2c8c7;
 }
 
+.explorer {
+    background: #ffe4e1;
+    border: 1px solid #ffa399;
+}
+
 .axis path,
 .axis line {
   fill: none;
@@ -255,16 +289,16 @@ body > div {
 
 <div class="id">None</div>
 
-<div class="div1"></div>
+<div class="div1"><div class="score"></div></div>
 
 <div class="div2"></div>
 
 <div class="div3">
-    <div class="orbit" id="orbit1" name="1" style="background:red;"><div></div></div>
-    <div class="orbit" id="orbit2" name="2" style="background:blue;"><div></div></div>
-    <div class="orbit" id="orbit3" name="3" style="background:red;"><div></div></div>
-    <div class="orbit" id="orbit4" name="4" style="background:blue;"><div></div></div>
-    <div class="orbit" id="orbit5" name="5" style="background:red;"><div></div></div>
+    <div class="orbit" name="1"><div></div></div>
+    <div class="orbit" name="2"><div></div></div>
+    <div class="orbit" name="3"><div></div></div>
+    <div class="orbit" name="4"><div></div></div>
+    <div class="orbit" name="5"><div></div></div>
 </div>
 
 <div class="div4">
@@ -284,20 +318,21 @@ body > div {
             <div class="trash">DELETE INSTRUMENT</div>
     </div>
     <div class="e-container">
-    <a class="ui-button ui-widget ui-corner-all" id="evaluate" href="#">Evaluate</a>
+        <a class="ui-button ui-widget ui-corner-all" id="evaluate" href="#">Evaluate</a>
     </div>
     <div class="c-container">
-    <a class="ui-button ui-widget ui-corner-all" id="criticize" href="#">Criticize</a>
-</div>
-    <div class="countdown"></div>
+        <a class="ui-button ui-widget ui-corner-all" id="criticize" href="#">Criticize</a>
+    </div>
+    <div class="timer"></div>
 </div>
 
-<script type="text/javascript" src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
-<script type="text/javascript" src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+<script type="text/javascript" src="//code.jquery.com/jquery-1.12.4.min.js"></script>
+<script type="text/javascript" src="//code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
 <script type="text/javascript" src="//d3js.org/d3.v3.min.js"></script>
 
 <script type="text/javascript" src="lib/tether.js"></script>
 <script type="text/javascript" src="lib/shepherd.js"></script>
+<script type="text/javascript" src="lib/welcome.js"></script>
 
 <script>
 
@@ -357,25 +392,33 @@ svg.append("g")
     .style("text-anchor", "end")
     .text("Cost")
 
-// Load data
-d3.dsv(":")("lib/EOSS_data.csv", function(error, data) {
-    data.forEach(function(d) {
-        d.science = +d.science;
-        d.cost = +d.cost;
-        plotPoints.push({
-            "science":d.science,"cost":d.cost,"architecture":""
-        });
-    });
+// Load initial data
+loadInitialData();
 
-    svg.selectAll(".dot")
-        .data(data)
-        .enter().append("circle")
-        .attr("class","dot")
-        .attr("r", 3.5)
-        .attr("cx", function(d) { return x(d.science)})
-        .attr("cy", function(d) { return y(d.cost)})
-        .style("fill", "#ffff00");
-});
+function loadInitialData() {
+
+    plotPoints = [];
+
+    d3.dsv(":")("lib/EOSS_data.csv", function(error, data) {
+        data.forEach(function(d) {
+            d.science = +d.science;
+            d.cost = +d.cost;
+            plotPoints.push({
+                "science":d.science,"cost":d.cost,"architecture":""
+            });
+        });
+
+        svg.selectAll(".dot").remove();
+        svg.selectAll(".dot")
+            .data(data)
+            .enter().append("circle")
+            .attr("class","dot")
+            .attr("r", 3.5)
+            .attr("cx", function(d) { return x(d.science)})
+            .attr("cy", function(d) { return y(d.cost)})
+            .style("fill", "#ffff00");
+    });
+}
 
 function resize() {
 
@@ -434,6 +477,15 @@ function addPoint(point) {
         .style("fill", "ff0000"); // Red
 }
 
+$(".score").html("Score: ??");
+
+function updateScore(science, cost) {
+    var score = Math.sqrt(
+        Math.pow((science-0.25),2)*Math.pow(1/0.3,2) + 
+        Math.pow((cost-1000),2)*Math.pow(1/1000,2));
+    $(".score").html("Score: "+score.toFixed(2));
+}
+
 // Div 2 Javascript code
 
 function displayMessages(messages) {
@@ -461,7 +513,13 @@ function displayMessages(messages) {
             if(message[2] != null) {
                 data += "<div class='hot-spot' onclick='showTip(event)'>i</div>";
             }
-            data += "<idv class='tip'>"+message[2]+"</div></div>";
+            data += "<div class='tip'>"+message[2]+"</div></div>";
+        } else if(message[0] == "explorer") {
+            data += "<div class='alert-box explorer'><p>Explorer </p>"+message[1];
+            if(message[2] != null) {
+                data += "<div class='hot-spot' onclick='showTip(event)'>i</div>";
+            }
+            data += "<div class='tip'>"+message[2]+"</div></div>";
         }
     }
     $(".div2").html(data);
@@ -475,22 +533,31 @@ displayMessages([["info","Call criticize to show warnings and recomendations"]])
 
 // Div 3 Javascript code
 
-$('.instrument').draggable({
-    connectWith: '.orbit',
+$('.instrument:not(.inactive)').draggable({
+    connectWith: '.orbit:not(.inactive)',
     containment: "window",
     helper: 'clone',
+    cursor: 'pointer',
+    drag: function( event, ui ) {
+        if($(this).hasClass('inactive')) {
+            event.preventDefault();
+        }
+    }
+});
+
+$('.orbit:not(.inactive)').sortable({
+    connectWith: '.orbit:not(.inactive)',
+    containment: "window",
     cursor: 'pointer'
 });
 
-$('.orbit').sortable({
-    connectWith: '.orbit',
-    containment: "window",
-    cursor: 'pointer'
-}).droppable({
-    accept: '.instrument',
+$('.orbit:not(.inactive)').droppable({
+    accept: '.instrument:not(.inactive)',
     drop: function(event, ui) {
-        var $li = $('<div>').html(ui.draggable.html());
-        $li.appendTo(this);
+        if(!$(this).hasClass('inactive')) {
+            var $li = $('<div>').html(ui.draggable.html());
+            $li.appendTo(this);
+        }
     }
 });
 
@@ -506,7 +573,7 @@ $('.trash').droppable({
 function getArchitecture() {
     var architecture = []
     for(var o = 0; o < 5; o++) {
-        architecture.push($("#orbit"+(o+1)).text());
+        architecture.push($(".orbit[name='"+(o+1)+"']").text());
     }
     return architecture;
 }
@@ -517,7 +584,7 @@ function setArchitecture(architecture) {
         for (var i = 0; i < architecture[o].length; i++){
             text += "<div>"+architecture[o].charAt(i)+"</div>";
         }
-        $("#orbit"+(o+1).toString()).html(text);
+        $(".orbit[name='"+(o+1)+"']").html(text);
     }
 }
 
@@ -551,7 +618,7 @@ var tour = new Shepherd.Tour({
 
 tour.addStep('Welcome 1', {
     title: 'Experiment overview',
-    text: ["In this experiment, you will design a constellation of satellites for Earth observation. Don't worry if you don't know much about the topic since all the details have been left out so that you will only deal with simple numbers and letters.","A design (i.e. satellite constellation) is defined by what instruments (sensors) are used in each spacecraft, and the orbits those spacecrafts fly.","The real name of orbits and instruments were changed to numbers and letter respectively to simplify the task. There are a total of 5 candidate orbits and 12 measurement instruments.","<img src='img/img1.jpg' width=570px height=210px></img>"],
+    text: ["In this experiment, you will design a constellation of satellites for Earth observation. Don't worry if you don't know much about the topic since all the details have been left out so that you will only deal with simple numbers and letters.","A design (i.e. satellite constellation) is defined by what instruments (sensors) are used in each spacecraft, and the orbits those spacecrafts fly.","There are a total of 5 candidate orbits and 12 measurement instruments.","<img src='img/img1.jpg' width=570px height=210px></img>"],
     attachTo: 'body',
     advanceOn: '.docs-link click'
 });
@@ -564,7 +631,7 @@ tour.addStep('Welcome 2', {
 });
 
 tour.addStep('Welcome 3', {
-    title: 'Instrument',
+    title: 'Instruments',
     text: ["Each block represents an instrument."],
     attachTo: '.div4 top',
     advanceOn: '.docs-link click'
@@ -578,14 +645,14 @@ tour.addStep('Welcome 4', {
 });
 
 tour.addStep('Welcome 5', {
-    title: 'Your first design',
+    title: 'Evaluate',
     text: ["Click to evaluate your design."],
     attachTo: '.e-container left',
     advanceOn: '.docs-link click'
 });
 
 tour.addStep('Welcome 6', {
-    title: 'Your first design',
+    title: 'Evaluate',
     text: ["Your design should appear as a red dot."],
     attachTo: '.div1 right',
     advanceOn: '.docs-link click'
@@ -593,20 +660,20 @@ tour.addStep('Welcome 6', {
 
 tour.addStep('Welcome 7', {
     title: 'Evaluate',
-    text: ["Each design has a science benefit and cost. The science benefit is a number that tells us how much value each design brings to the climate monitoring community. The cost is a measure of how much it is going to cost (in million dollars) to design, implement, launch and operate those systems. Naturally, low-cost and high-science designs are desirable.", "Your task is to make a design which is as close to the blue point in the figure as possible.","<img src='img/img2.jpg' width=570px height=210px></img>"],
+    text: ["Each design has a science benefit and cost. The science benefit is a number that tells us how much value each design brings to the climate monitoring community. The cost is a measure of how much it is going to cost to design, implement, launch and operate those systems. Naturally, low-cost and high-science designs are desirable.","In the figure on the left is a possible design. In the figure on the right is the science benefit and cost associatied to this design (red dot). Your goal is to make a design which has a score (distance to the optimal point (blue dot)) as close to 0 as possilbe.","<img src='img/img2.jpg' width=570px height=210px></img>"],
     attachTo: '.body',
     advanceOn: '.docs-link click'
 });
 
 tour.addStep('Welcome 8', {
-    title: 'Your first design',
+    title: 'Criticize',
     text: ["Click to criticize your design."],
     attachTo: '.c-container left',
     advanceOn: '.docs-link click'
 });
 
 tour.addStep('Welcome 9', {
-    title: 'Your first design',
+    title: 'Criticize',
     text: ["The result of the criticize should appear here."],
     attachTo: '.div2 left',
     advanceOn: '.docs-link click'
@@ -614,36 +681,105 @@ tour.addStep('Welcome 9', {
 
 tour.addStep('Welcome 10', {
     title: 'Criticize',
-    text: ["The critic agent will give you very valuable information in order to improve your design.","...","<img src='img/img3.jpg' width=570px height=150px></img>"],
+    text: ["The critic agent will give you very valuable information in order to improve your design.","There are three types of critique: expert, historian and analyst.","<img src='img/img3.jpg' width=570px height=150px></img>"],
     attachTo: '.body',
     advanceOn: '.docs-link click'
 });
 
 tour.addStep('Welcome 11', {
     title: 'Criticize',
-    text: ["Move instrument A to orbit 1 as the critic agent suggest and evaluate your design."],
+    text: ["The expert suggests to move instrument A to another orbit."],
     attachTo: '.div2 left',
     advanceOn: '.docs-link click'
 });
 
 tour.addStep('Welcome 12', {
     title: 'Criticize',
+    text: ["Try to move instrument A to orbit 1 and evaluate your design."],
+    attachTo: '.div2 left',
+    advanceOn: '.docs-link click'
+});
+
+
+tour.addStep('Welcome 13', {
+    title: 'Criticize',
     text: ["You should see that the  science benefit of your desing has improved."],
     attachTo: '.div1 right',
     advanceOn: '.docs-link click'
 });
 
-tour.addStep('Welcome 13', {
+tour.addStep('Welcome 14', {
     title: 'Criticize',
-    text: ["Try also to take advantatge of the database1 and database2 suggestions."],
+    text: ["Try also to take advantatge of the historian and analyst suggestions."],
     attachTo: '.div2 left',
     advanceOn: '.docs-link click'
 });
 
-tour.addStep('Welcome 14', {
-    title: 'Your first design',
-    text: ["You will have 15 minutes to find the best design."],
-    attachTo: '.countdown top',
+tour.addStep('Welcome 15', {
+    title: 'Timer',
+    text: ["You will have 15 minutes to find the best design in each round."],
+    attachTo: '.timer top',
+    advanceOn: '.docs-link click'
+});
+
+tour.addStep('Round 1', {
+    title: 'Round 1',
+    text: ["In this round you will have the following orbits and instruments available:","Orbits: 1, 3, 4", "Instruments: A, B, G, L"],
+    attachTo: '.body',
+    buttons: [
+        {
+            text: 'Start',
+            action: function() {
+                initRound("134","ABGL");
+                registerAction("Round1","");
+                startTimer();
+                return tour.hide();
+            }
+        }]
+});
+
+// First round
+
+tour.addStep('Round 2', {
+    title: 'Round 2',
+    text: ["In this round you will have the following orbits and instruments available:","Orbits: 1, 2, 3, 4","Instruments: A, B, C, D, E, F"],
+    attachTo: '.body',
+    buttons: [
+        {
+            text: 'Start',
+            action:  function() {
+                initRound("1234","ABCDEF");
+                registerAction("Round2","");
+                startTimer(); 
+                return tour.hide();
+            }
+        }]
+});
+
+// Second round
+
+tour.addStep('Round 3', {
+    title: 'Round 3',
+    text: ["In this round you will have the following orbits and instruments available","Orbits: 1, 2, 3, 4, 5","Instruments: A, B, C, D, E, F, G, H, I, J, K, L"],
+    attachTo: '.body',
+    buttons: [
+        {
+            text: 'Start',
+            action:  function() {
+                initRound("12345","ABCDEFGHIJKL");
+                registerAction("Round3","");
+                startTimer(); 
+                return tour.hide();
+            }
+        }]
+});
+
+// Third roud
+
+tour.addStep('Conclusion', {
+    title: 'Conclusion',
+    text: ["Conclusion of the experiment. Thanks for participating!"],
+    attachTo: '.body',
     buttons: [
         {
             text: 'Start',
@@ -651,23 +787,57 @@ tour.addStep('Welcome 14', {
         }]
 });
 
-$(window).load(function(){
-    //tour.start();
+// Experiment completed. Redirect to form
+
+$(window).load(function() {
+    if(getParameterByName("experiment") == "true") {
+        tour.start();
+    }
 });
+
+function nextRound() {
+    initRound("","");
+    tour.next();
+}
+
+function initRound(orbits, instruments) {
+    loadInitialData();
+    setArchitecture(["","","","",""]);
+    displayMessages([["info","Call criticize to show warnings and recomendations"]]);
+    if(interval != null) {
+        clearInterval(interval);
+        timer2 = "15:00";
+        $('.timer').html("??:??");
+    }
+    $('.orbit').addClass("inactive");
+    $('.instrument').addClass("inactive");
+    for(var o = 0; o < orbits.length; o++) {
+        $(".orbit[name='"+orbits[o]+"']").removeClass("inactive");
+    }
+    for(var i = 0; i < instruments.length; i++) {
+        $(".instrument[name='"+instruments[i]+"']").removeClass("inactive");
+    }
+}
+
+function getParameterByName(name) {
+    var match = RegExp('[?&]' + name + '=([^&]*)').exec(window.location.search);
+    return match && decodeURIComponent(match[1].replace(/\+/g, ' '));
+}
 
 function registerAction(type, data) {
     var date = new Date();
     var data = date.toLocaleTimeString()+" "+type+" "+data;
-    console.log(data);
     ws_send({"event": "experiment", "id": sessionId, "data": data});
 }
 
 var timer2 = "15:00";
 
-$('.countdown').html(timer2);
+$('.timer').html("??:??");
+
+var interval;
 
 function startTimer() {
-    var interval = setInterval(function() {
+    interval = setInterval(function() {
         var timer = timer2.split(':');
         var minutes = parseInt(timer[0], 10);
         var seconds = parseInt(timer[1], 10);
@@ -675,12 +845,12 @@ function startTimer() {
         minutes = (seconds < 0) ? --minutes : minutes;
         if (minutes < 0) { 
             clearInterval(interval);
-            alert("Thank you for participating!");
+            nextRound();
         }
         seconds = (seconds < 0) ? 59 : seconds;
         seconds = (seconds < 10) ? '0' + seconds : seconds;
 
-        $('.countdown').html(minutes + ':' + seconds);
+        $('.timer').html(minutes + ':' + seconds);
         timer2 = minutes + ':' + seconds;
     }, 1000);
 }
@@ -757,6 +927,7 @@ function open_ws(msg){
                 ws_send(msg);
 
             } else if(msg.type == "evaluate") {
+                updateScore(msg.science,msg.cost);
                 addPoint({
                     "science":msg.science,"cost":msg.cost,"architecture":getArchitecture()});
                 displayMessages([["info","Call criticize to show warnings and recomendations"]]);

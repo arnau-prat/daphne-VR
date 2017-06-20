@@ -71,7 +71,7 @@ def ws_message(message):
         # Write experiment data
         filename = str("../../critic_experiment/res/%s.txt" % msg["id"])
         with open(filename, 'a+') as file:
-            file.write(msg["data"])
+            file.write("%s\n" % msg["data"])
 
     else:
         print msg

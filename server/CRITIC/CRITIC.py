@@ -1,3 +1,5 @@
+import csv
+import json
 import numpy as np
 from sqlalchemy.orm import sessionmaker
 
@@ -144,6 +146,69 @@ class CRITIC:
 
     def matchFeatures(self, arch):
         res = []
+        with open("EOSS_features.csv", "r") as csvfile:
+            features = csv.reader(csvfile, delimiter=':')
+            for row in features:
+                match = True
+                # present
+                for i in row[0]:
+                    if not any(i in o for o in arch):
+                        match = False
+                # abscent
+                for i in row[1]:
+                    if any(i in o for o in arch):
+                        match = False
+                # inOrbit
+                inOrbit = json.loads(row[2])
+                for o in range(len(inOrbit)):
+                    for i in inOrbit[o]:
+                        if not i in arch[o]:
+                            match = False
+                # notInOrbit
+                notInOrbit = json.loads(row[3])
+                for o in range(len(notInOrbit)):
+                    for i in notInOrbit[o]:
+                        if i in arch[o]:
+                            match = False
+                # together
+                if len(row[4]) > 1:
+                    for o in range(len(arch)):
+                        if row[4][0] in arch[o]:
+                            if not [c in arch[o] for c in row[4]]:
+                                match = False
+                # togetherInOrbit
+                rr = json.loads(row[5])
+                if int(rr[1]) > 0:
+                    if len(rr[0]) > 1:
+                        if rr[0] in arch(int(rr[1]-1)):
+                            if not [c in arch[int(rr[1]-1)] for c in rr[0]]:
+                                match = False
+                # separate
+                if len(row[6]) > 1:
+                    for o in range(len(arch)):
+                        print row[6]
+                        if row[6][0] in arch(o):
+                           if [c in arch[o] for c in row[6]]:
+                               match = False
+                # emptyOrbit
+                emptyOrbit = int(row[7])-1
+                if emptyOrbit > -1:
+                    if arch[emptyOrbit] != '':
+                        match = False
+                # numberOfOrbitsUsed
+                numberOfOrbitsUsed = int(row[8])
+                if numberOfOrbitsUsed != -1:
+                    if sum(o != '' for o in arch) != numberOfOrbitsUsed:
+                        match = False
+                print match
+                # numberOfInstruments
+                numberOfInstruments = int(row[9])
+                if numberOfInstruments != -1:
+                    if sum(i for i in o for o in arch) != numberOfInstruments:
+                        match = False
+                # Append res if match == True
+                if match == True:
+                    res.append(row)
         return res
 
     def p(self, l):
@@ -182,24 +247,24 @@ class CRITIC:
     def criticizeArch(self, arch):
         result = []
         # Type 1: Instrument by intrument
-        for o in range(len(arch)):
-            for i in arch[o]:
-                orbit = self.orbitsDataset[o]
-                instrument = next(ii for ii in self.instrumentsDataset if ii["alias"] == i)
-                res = self.getSimilarInstruments(orbit, instrument)
-                if len(res) == 0:
-                    result.append([
-                        "historian1",
-                        "Instrument %s has never been flown in orbit %s before" % \
-                             (instrument["alias"], orbit["alias"])
-                    ])
-                else:
-                    result.append([
-                        "historian1",
-                        "Instrument %s has been flown in orbit %s before (%s matches in the database)" % \
-                            (instrument["alias"], orbit["alias"], len(res)),
-                        str(', '.join([r.name for r in res]))
-                ])
+        #for o in range(len(arch)):
+        #    for i in arch[o]:
+        #        orbit = self.orbitsDataset[o]
+        #        instrument = next(ii for ii in self.instrumentsDataset if ii["alias"] == i)
+        #        res = self.getSimilarInstruments(orbit, instrument)
+        #        if len(res) == 0:
+        #            result.append([
+        #                "historian1",
+        #                "Instrument %s has never been flown in orbit %s before" % \
+        #                     (instrument["alias"], orbit["alias"])
+        #            ])
+        #        else:
+        #            result.append([
+        #                "historian1",
+        #                "Instrument %s has been flown in orbit %s before (%s matches in the database)" % \
+        #                    (instrument["alias"], orbit["alias"], len(res)),
+        #                str(', '.join([r.name for r in res]))
+        #        ])
         # Type 2: Mission by mission
         missionsDatabase = self.session.query(models.Mission)
         for o in range(len(arch)):
