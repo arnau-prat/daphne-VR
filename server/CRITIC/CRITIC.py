@@ -211,6 +211,52 @@ class CRITIC:
                     res.append(row)
         return res
 
+    def archDifferences(self, arch1, arch2):
+        result = []
+        aa = []
+        bb = []
+        N = max(len(arch1),len(arch2))
+        a = arch1 + ['']*(N - len(arch1))
+        b = arch2 + ['']*(N - len(arch2))
+        for o in range(N):
+            i = 0
+            while True:
+                if i == len(a[o]):
+                    break
+                if b[o].find(a[o][i]) != -1:
+                    b[o] = b[o].replace(a[o][i],'',1)
+                    a[o] = a[o].replace(a[o][i],'',1)
+                else:
+                    i += 1
+            aa.append(a[o])
+            bb.append(b[o])
+        for o1 in range(N):
+            for i1 in range(len(aa[o1])):
+                match = False
+                for o2 in range(N):
+                    if bb[o2].find(aa[o1][i1]) != -1:
+                        bb[o2] = bb[o2].replace(aa[o1][i1],'',1)
+                        match = True
+                        break
+                if match == True:
+                    result.append(["moved", o1, o2, aa[o1][i1]])
+                else:
+                    result.append(["deleted", o1, aa[o1][i1]])
+        for o2 in range(N):
+            for i2 in range(len(bb[o2])):
+                result.append(["added", o2, bb[o2][i2]])
+        return result
+
+    def matchSimilar(self, arch):
+        res = []
+        with open("EOSS_data.csv", "r") as csvfile:
+            architectures = csv.reader(csvfile, delimiter=':')
+            for row in architectures:
+                diff = self.archDifferences(arch,json.loads(row[0]))
+                if len(diff) == 1:
+                    res.append([diff, float(row[1]), float(row[2])])
+        return res
+
     def p(self, l):
         if not l: return [[]]
         return self.p(l[1:]) + [[l[0]] + x for x in self.p(l[1:])]
@@ -298,7 +344,21 @@ class CRITIC:
                 result.append([
                     "analyst",
                     "There seems to be %d good features in your design" % len(res),
-                    '<br>'.join(["Feature %s" % r for r in res])
+                    '<br>'.join(["Features %s" % r for r in res])
+                ])
+        # Explorer
+        if len(''.join(arch)) > 0:
+            res = self.matchSimilar(arch)
+            if len(res) == 0:
+                result.append([
+                    "explorer",
+                    "There doesn't seem to be any good designs similar to yours"
+                ])
+            else:
+                result.append([
+                    "explorer",
+                    "There seems to be %d good designs similar to yours " % len(res),
+                    '<br>'.join(["Designs %s" % r[0] for r in res])
                 ])
         # Return result
         return result
