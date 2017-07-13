@@ -618,7 +618,7 @@ var tour = new Shepherd.Tour({
 
 tour.addStep('Welcome 1', {
     title: 'Experiment overview',
-    text: ["In this experiment, you will design a constellation of satellites for Earth observation. Don't worry if you don't know much about the topic since all the details have been left out so that you will only deal with simple numbers and letters.","A design (i.e. satellite constellation) is defined by what instruments (sensors) are used in each spacecraft, and the orbits those spacecrafts fly.","There are a total of 5 candidate orbits and 12 measurement instruments.","<img src='img/img1.jpg' width=570px height=210px></img>"],
+    text: ["In this experiment, you will design a constellation of satellites for Earth observation. Don't worry if you don't know much about the topic since all the details have been left out so that you will only deal with simple numbers and letters.","A design (i.e., a satellite constellation) is defined by a set of satellites, where each satellite has a set of instruments (sensors) and an orbit (altitude, inclination). A good design has a high science benefit and low cost.","There are a total of 5 candidate orbits and 12 candidate instruments.","<img src='img/img1.jpg' width=570px height=210px></img>"],
     attachTo: 'body',
     advanceOn: '.docs-link click'
 });
@@ -646,21 +646,21 @@ tour.addStep('Welcome 4', {
 
 tour.addStep('Welcome 5', {
     title: 'Evaluate',
-    text: ["Click to evaluate your design."],
+    text: ["Click to evaluate your design (i.e., to calculate its science benefit and cost)."],
     attachTo: '.e-container left',
     advanceOn: '.docs-link click'
 });
 
 tour.addStep('Welcome 6', {
     title: 'Evaluate',
-    text: ["Your design should appear as a red dot."],
+    text: ["Your design should appear as a red dot in the science-cost scatter plot."],
     attachTo: '.div1 right',
     advanceOn: '.docs-link click'
 });
 
 tour.addStep('Welcome 7', {
     title: 'Evaluate',
-    text: ["Each design has a science benefit and cost. The science benefit is a number that tells us how much value each design brings to the climate monitoring community. The cost is a measure of how much it is going to cost to design, implement, launch and operate those systems. Naturally, low-cost and high-science designs are desirable.","In the figure on the left is a possible design. In the figure on the right is the science benefit and cost associatied to this design (red dot). Your goal is to make a design which has a score (distance to the optimal point (blue dot)) as close to 0 as possilbe.","<img src='img/img2.jpg' width=570px height=210px></img>"],
+    text: ["Each design has a science benefit and cost. The science benefit is a number that tells us how much value each design provides to the climate monitoring community. The cost is a measure of how much it is going to cost to design, implement, launch and operate those spacecraft. Naturally, low-cost and high-science designs are desirable.","In the figure on the left is a possible design. In the figure on the right is the science benefit and cost associated with this design (the red dot). The score of a design is the distance of the red dot to the optimal point (blue dot). Your goal is to come up with a design that has a score as close to 0 as possible, i.e., that maximizes science benefit and minimizes cost.","<img src='img/img2.jpg' width=570px height=210px></img>"],
     attachTo: '.body',
     advanceOn: '.docs-link click'
 });
@@ -674,14 +674,14 @@ tour.addStep('Welcome 8', {
 
 tour.addStep('Welcome 9', {
     title: 'Criticize',
-    text: ["The result of the criticize should appear here."],
+    text: ["The comments and suggestions from the critic agents should appear here."],
     attachTo: '.div2 left',
     advanceOn: '.docs-link click'
 });
 
 tour.addStep('Welcome 10', {
     title: 'Criticize',
-    text: ["The critic agent will give you very valuable information in order to improve your design.","There are three types of critique: expert, historian and analyst.","<img src='img/img3.jpg' width=570px height=150px></img>"],
+    text: ["The critic agents will give you valuable information to help you improve your design.","There are four types of critic agents: the expert, the historian, the analyst and the explorer. The expert has many years of experience designing spacecraft for climate monitoring. The historian has access to a database of past missions and thus can recommend things based on what was done in the past. The analyst uses statistical techniques to look for trends in the current dataset and recommend changes to your design based on that. The explorer will discover new design for you and it will tell you if it finds someone good.","<img src='img/img3.jpg' width=570px height=150px></img>"],
     attachTo: '.body',
     advanceOn: '.docs-link click'
 });

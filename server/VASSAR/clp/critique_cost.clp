@@ -4,23 +4,21 @@
     (MANIFEST::Mission (Name ?n)(satellite-dry-mass ?sdm&:(> ?sdm 3000)))
     =>
     (call ?*q* addElement (new java.lang.String
-        (str-cat "Satellite at orbit " ?n " is too heavy: dry-mass " (format nil "%2.2f" ?sdm) " kg"))))
+        (str-cat "Satellite in orbit " ?n " is too heavy: dry-mass " (format nil "%2.2f" ?sdm) " kg"))))
 
 (defrule CRITIQUE-COST::satellite-size-comparison
     (CRITIQUE-COST-PARAM::satellite-max-size-ratio (value ?r&:(> ?r 2.5)) (big-name ?bn) (small-name ?sn))
     =>
     (if (<> ?bn ?sn) then
     (call ?*q* addElement (new java.lang.String
-        (str-cat "Satellites do not have similar sizes: satellite "
-        ?bn " larger than " ?sn " (" (format nil "%2.2f" ?r) ")")))))
+        (str-cat "It is desirable to have satellites of similar size: satellite " ?bn " more than " ?sn " ("format nil "%2.2f" ?r) ")")))))
 
 (defrule CRITIQUE-COST::satellite-cost-comparison
     (CRITIQUE-COST-PARAM::satellite-max-cost-ratio (value ?r&:(> ?r 2.5))(big-name ?bn) (small-name ?sn))
     =>
     (if (<> ?bn ?sn) then
     (call ?*q* addElement (new java.lang.String
-        (str-cat "Satellites do not have similar costs: satellite "
-        ?bn " more than " ?sn " (" (format nil "%2.2f" ?r) ")")))))
+        (str-cat "It is desirable to have satellites of similar cost: satellite " ?bn " more than " ?sn " (" (format nil "%2.2f" ?r) ")")))))
 
 (defrule CRITIQUE-COST::launch-packaging-factors
     (CRITIQUE-COST-PARAM::launch-packaging-factors (name ?n)(performance-mass-ratio ?r-pm) 
@@ -33,4 +31,4 @@
     (if (> ?m 0.2)
     then (
         call ?*q* addElement (new java.lang.String
-            (str-cat "The limiting factor among launch-packaging ratios of " ?n " is " ?lf ": "?m)))))
+            (str-cat "It is desirable to fill launch vehicles to their capacity. They are currently only usde at X %" ?n " is " ?lf ": "?m)))))

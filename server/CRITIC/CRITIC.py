@@ -186,7 +186,6 @@ class CRITIC:
                 # separate
                 if len(row[6]) > 1:
                     for o in range(len(arch)):
-                        print row[6]
                         if row[6][0] in arch(o):
                            if [c in arch[o] for c in row[6]]:
                                match = False
@@ -200,15 +199,16 @@ class CRITIC:
                 if numberOfOrbitsUsed != -1:
                     if sum(o != '' for o in arch) != numberOfOrbitsUsed:
                         match = False
-                print match
                 # numberOfInstruments
                 numberOfInstruments = int(row[9])
                 if numberOfInstruments != -1:
                     if sum(i for i in o for o in arch) != numberOfInstruments:
                         match = False
                 # Append res if match == True
+                features = ["present", "abscent", "inOrbit", "notInOrbit", "together", "togetherInOrbit", "Separate", "emptyOrbit", "numberOfOrbitsUsed", "numberOfInstruments"]
                 if match == True:
-                    res.append(row)
+                    res.append("&&".join([("%s(%s)" % (features[i] ,row[i])) \
+                         for i in range(len(row)) if ( row[i] != '' and row[i] != "[\"\",\"\",\"\",\"\",\"\"]" and row[i] != "[\"\",-1]" and row[i] != "-1")]))
         return res
 
     def archDifferences(self, arch1, arch2):
@@ -253,6 +253,7 @@ class CRITIC:
             architectures = csv.reader(csvfile, delimiter=':')
             for row in architectures:
                 diff = self.archDifferences(arch,json.loads(row[0]))
+                # Get similar architectures (1 change maximum)
                 if len(diff) == 1:
                     res.append([diff, float(row[1]), float(row[2])])
         return res
@@ -321,7 +322,7 @@ class CRITIC:
                 if res[0] < 6:
                     result.append([
                         "historian2",
-                        "There are no similar missions to %s in orbit %s in the database" % \
+                        "Your mission is odd: There are no similar missions to %s in orbit %s in the database. Consider changing it" % \
                             (str([i["alias"] for i in instruments]), orbit["alias"])
                     ])
                 else:
@@ -338,13 +339,13 @@ class CRITIC:
             if len(res) == 0:
                 result.append([
                     "analyst",
-                    "There doesn't seem to be any good features in your design"
+                    "Your design doesn't have much in common with other good designs"
                 ])
             else:
                 result.append([
                     "analyst",
-                    "There seems to be %d good features in your design" % len(res),
-                    '<br>'.join(["Features %s" % r for r in res])
+                    "Your design seems to have %d common features among good desings" % len(res),
+                    '<br>'.join(["Features: %s" % r for r in res])
                 ])
         # Explorer
         if len(''.join(arch)) > 0:
@@ -352,13 +353,13 @@ class CRITIC:
             if len(res) == 0:
                 result.append([
                     "explorer",
-                    "There doesn't seem to be any good designs similar to yours"
+                    "I tried a few changes and couldn't find an easy way to improve your design"
                 ])
             else:
                 result.append([
                     "explorer",
-                    "There seems to be %d good designs similar to yours " % len(res),
-                    '<br>'.join(["Designs %s" % r[0] for r in res])
+                    "I have found %d designs that are similar to yours but a little better " % len(res),
+                    '<br>'.join(["Designs: %s (Science: %.2f, Cost: %.2f)" % (r[0], r[1], r[2]) for r in res])
                 ])
         # Return result
         return result

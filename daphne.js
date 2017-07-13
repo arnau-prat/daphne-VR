@@ -168,14 +168,22 @@ function init() {
     criticizeData = [["info","Call criticize to show warnings"]];
     drawCriticTable(0);
 
-    material = new THREE.MeshLambertMaterial({color: 0xff666e});
-    mesh = new THREE.Mesh(new THREE.CubeGeometry(50,50,50), material);
-    mesh.position.set(200,400,-400);
+    mesh = createGridElement("NEXT", 1500, 400, 150, 40);
+    mesh.position.set(300,350,-400);
     mesh.userData.index = 0;
     mesh.userData.type = "button";
     mesh.userData.subtype = "indexCritic";
     actuators.push(mesh);
     scene.add(mesh);
+
+    mesh = createGridElement("CRITICIZE", 1500, 400, 150, 40);
+    mesh.position.set(100,350,-400);
+    mesh.userData.index = 0;
+    mesh.userData.type = "button";
+    mesh.userData.subtype = "criticize";
+    actuators.push(mesh);
+    scene.add(mesh);
+
 }
 
 function render() {
@@ -302,8 +310,9 @@ $(document).keypress(function() {
                 processing.visible = true;
             } else if(object.userData.subtype == "criticize") {
                 console.log("criticize");
-                var msg = {event: "criticize"};
+                var msg = {event: "criticize", architecture: architecture};
                 ws_send(msg);
+                processing.visible = true;
             } else if(object.userData.subtype == "indexCritic") {
                 console.log("Button critic");
                 console.log(object.userData.index);
@@ -942,17 +951,17 @@ function drawCriticTable(index) {
     var i_max = (data.length < (index+1)*5) ? data.length : (index+1)*5;
 
     for(var i = i_min; i < i_max ; i++) {
-        var color = "green";
+        var color = "#66ff7f";
         if(data[i][0] == "info") {
-            color = "blue";
+            color = "#00c8ff";
         } else if(data[i][0] == "expert") {
-            color = "red"
+            color = "#ff6666"
         } else if(data[i][0] == "historian1") {
-            color = "orange";
+            color = "#ffc966";
         } else if(data[i][0] == "historian2") {
-            color = "orange";
+            color = "#ffc966";
         } else if(data[i][0] == "analyst") {
-            color = "green";
+            color = "#4cff85";
         }
         mesh = drawCriticRow(data[i][1],color);
         mesh.position.set(-375,300-(i-i_min)*50,-400);
@@ -1023,7 +1032,6 @@ $(document).ready(function () {
         ws_send(msg);
     }
 });
-
 
 function ws_send(msg){
     if( websocket == true ){
