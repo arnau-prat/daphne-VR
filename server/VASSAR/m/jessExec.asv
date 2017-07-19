@@ -1,3 +1,0 @@
-function r = getJess()
-eval(['r.eval(' cmd ');']);
-
